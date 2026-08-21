@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="על הראש" />
+  <title>על הראש — משחק ניחושים בעברית</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">משחק ניחושים בעברית</div>
+        <h1>על הראש</h1>
+      </div>
+      <button id="rulesBtn" class="icon-btn" type="button" aria-label="חוקים">?</button>
+    </header>
+
+    <main>
+      <section id="homeScreen" class="screen active">
+        <div class="hero">
+          <div class="hero-emoji">🤳</div>
+          <div>
+            <h2>בחר חבילה והתחל לנחש</h2>
+            <p>שים את הטלפון לרוחב על המצח. מטה = נכון, מעלה = דילוג.</p>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <label>
+            זמן לסיבוב
+            <select id="durationSelect">
+              <option value="30">30 שניות</option>
+              <option value="60" selected>60 שניות</option>
+              <option value="90">90 שניות</option>
+              <option value="120">120 שניות</option>
+            </select>
+          </label>
+          <label class="toggle-label">
+            <input id="passPenalty" type="checkbox" />
+            <span>דילוג מוריד נקודה</span>
+          </label>
+        </div>
+
+        <h3 class="section-title">חבילות</h3>
+        <div id="deckGrid" class="deck-grid"></div>
+
+        <section class="custom-box">
+          <h3>חבילה אישית</h3>
+          <p>כתוב מילה בכל שורה. הרשימה נשמרת במכשיר.</p>
+          <textarea id="customWords" rows="7" placeholder="לדוגמה:&#10;אבטיח&#10;ירושלים&#10;כדורגל"></textarea>
+          <div class="custom-actions">
+            <button id="saveCustomBtn" class="secondary-btn" type="button">שמור חבילה</button>
+            <span id="customCount" class="muted"></span>
+          </div>
+        </section>
+      </section>
+
+      <section id="readyScreen" class="screen center-screen">
+        <div class="ready-card">
+          <div class="big-icon">📱</div>
+          <h2 id="readyDeckName"></h2>
+          <p>לחץ על הכפתור, אשר גישה לחיישני תנועה אם תתבקש, סובב את הטלפון לרוחב והנח אותו על המצח.</p>
+          <button id="sensorStartBtn" class="primary-btn" type="button">הפעל חיישנים והתחל</button>
+          <button id="backHomeBtn" class="ghost-btn" type="button">חזרה</button>
+          <p id="sensorMessage" class="sensor-message"></p>
+        </div>
+      </section>
+
+      <section id="countdownScreen" class="screen game-screen countdown-screen">
+        <div class="game-topline">
+          <span id="countdownDeck"></span>
+          <span>התכונן</span>
+        </div>
+        <div id="countdownNumber" class="countdown-number">3</div>
+        <div class="orientation-hint">החזק לרוחב • מסך פונה לחברים</div>
+      </section>
+
+      <section id="gameScreen" class="screen game-screen">
+        <div class="game-topline">
+          <span id="gameDeckName"></span>
+          <span id="timerText" class="timer">01:00</span>
+          <span id="scoreText">0 נק׳</span>
+        </div>
+
+        <div id="wordCard" class="word-card">
+          <div id="wordText" class="word-text"></div>
+          <div id="feedback" class="feedback" aria-live="polite"></div>
+        </div>
+
+        <div class="gesture-help">
+          <div>↘ <strong>מטה</strong> = נכון</div>
+          <div>↗ <strong>מעלה</strong> = דילוג</div>
+        </div>
+
+        <div class="fallback-controls">
+          <button id="skipBtn" type="button" class="skip-btn">דלג</button>
+          <button id="correctBtn" type="button" class="correct-btn">נכון ✓</button>
+        </div>
+      </section>
+
+      <section id="resultsScreen" class="screen">
+        <div class="results-header">
+          <div class="big-icon">🏁</div>
+          <h2>נגמר הזמן</h2>
+          <div id="finalScore" class="final-score">0</div>
+          <div class="muted">נקודות</div>
+        </div>
+        <div id="resultsList" class="results-list"></div>
+        <div class="results-actions">
+          <button id="playAgainBtn" class="primary-btn" type="button">שחק שוב</button>
+          <button id="resultsHomeBtn" class="secondary-btn" type="button">בחר חבילה אחרת</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="rulesDialog">
+    <button id="closeRulesBtn" class="dialog-close" type="button" aria-label="סגור">×</button>
+    <h2>איך משחקים?</h2>
+    <ol>
+      <li>בחר חבילת מילים וזמן לסיבוב.</li>
+      <li>השחקן המנחש מחזיק את הטלפון לרוחב על המצח, בלי לראות את המסך.</li>
+      <li>החברים נותנים רמזים בלי לומר את המילה שמופיעה.</li>
+      <li>ניחשת נכון? הטה את החלק העליון של הטלפון כלפי מטה.</li>
+      <li>רוצה לדלג? הטה לכיוון ההפוך.</li>
+      <li>המטרה: לצבור כמה שיותר תשובות נכונות לפני שהזמן נגמר.</li>
+    </ol>
+    <p class="muted">אם חיישני ההטיה אינם זמינים, אפשר להשתמש בכפתורי "נכון" ו"דלג" שעל המסך.</p>
+  </dialog>
+
+  <script src="./words.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
