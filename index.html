@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="על הראש" />
@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <div class="app-glow app-glow-a"></div>
+  <div class="app-glow app-glow-b"></div>
+
   <div id="app">
     <header class="topbar">
       <div>
@@ -26,10 +29,31 @@
     <main>
       <section id="homeScreen" class="screen active">
         <div class="hero">
-          <div class="hero-emoji">🤳</div>
-          <div>
-            <h2>בחר חבילה והתחל לנחש</h2>
-            <p>שים את הטלפון לרוחב על המצח. מטה = נכון, מעלה = דילוג.</p>
+          <div class="hero-copy">
+            <div class="hero-badge">🎉 מוכן למסיבה הבאה</div>
+            <h2>בחר חבילה, שים את הטלפון על המצח — ותתחילו לצחוק</h2>
+            <p>מטה = נכון, מעלה = דילוג. עובד עם חיישני תנועה וגם עם כפתורי גיבוי.</p>
+            <div class="hero-stats">
+              <div class="stat-pill">
+                <strong id="totalDecks">12</strong>
+                <span>חבילות</span>
+              </div>
+              <div class="stat-pill">
+                <strong id="totalWords">0</strong>
+                <span>מילים</span>
+              </div>
+              <div class="stat-pill">
+                <strong>עברית</strong>
+                <span>מותאם לנייד</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="phone-mock">
+              <div class="phone-notch"></div>
+              <div class="phone-word">🤳</div>
+              <div class="phone-mini">נכון / דילוג</div>
+            </div>
           </div>
         </div>
 
@@ -49,12 +73,20 @@
           </label>
         </div>
 
-        <h3 class="section-title">חבילות</h3>
+        <div class="section-head">
+          <h3 class="section-title">חבילות</h3>
+          <div class="section-subtitle">בחר את הנושא שמתאים לקבוצה שלך</div>
+        </div>
         <div id="deckGrid" class="deck-grid"></div>
 
         <section class="custom-box">
-          <h3>חבילה אישית</h3>
-          <p>כתוב מילה בכל שורה. הרשימה נשמרת במכשיר.</p>
+          <div class="custom-head">
+            <div>
+              <h3>חבילה אישית</h3>
+              <p>כתוב מילה בכל שורה. הרשימה נשמרת במכשיר שלך.</p>
+            </div>
+            <div class="custom-chip">מותאם אישית</div>
+          </div>
           <textarea id="customWords" rows="7" placeholder="לדוגמה:&#10;אבטיח&#10;ירושלים&#10;כדורגל"></textarea>
           <div class="custom-actions">
             <button id="saveCustomBtn" class="secondary-btn" type="button">שמור חבילה</button>
@@ -67,6 +99,7 @@
         <div class="ready-card">
           <div class="big-icon">📱</div>
           <h2 id="readyDeckName"></h2>
+          <p id="readyDeckMeta" class="ready-deck-meta"></p>
           <p>לחץ על הכפתור, אשר גישה לחיישני תנועה אם תתבקש, סובב את הטלפון לרוחב והנח אותו על המצח.</p>
           <button id="sensorStartBtn" class="primary-btn" type="button">הפעל חיישנים והתחל</button>
           <button id="backHomeBtn" class="ghost-btn" type="button">חזרה</button>
@@ -137,6 +170,7 @@
   </dialog>
 
   <script src="./words.js"></script>
+  <script src="./words-more.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

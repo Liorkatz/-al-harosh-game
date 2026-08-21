@@ -7,14 +7,16 @@
 
   const els = {
     home: $('homeScreen'), ready: $('readyScreen'), countdown: $('countdownScreen'), game: $('gameScreen'), results: $('resultsScreen'),
-    deckGrid: $('deckGrid'), duration: $('durationSelect'), passPenalty: $('passPenalty'),
+    deckGrid: $('deckGrid'), duration: $('durationSelect'), passPenalty: $('passPenalty'), totalWords: $('totalWords'), totalDecks: $('totalDecks'),
     customWords: $('customWords'), customCount: $('customCount'), saveCustomBtn: $('saveCustomBtn'),
-    readyDeckName: $('readyDeckName'), sensorStartBtn: $('sensorStartBtn'), sensorMessage: $('sensorMessage'), backHomeBtn: $('backHomeBtn'),
+    readyDeckName: $('readyDeckName'), readyDeckMeta: $('readyDeckMeta'), sensorStartBtn: $('sensorStartBtn'), sensorMessage: $('sensorMessage'), backHomeBtn: $('backHomeBtn'),
     countdownDeck: $('countdownDeck'), countdownNumber: $('countdownNumber'),
     gameDeckName: $('gameDeckName'), timerText: $('timerText'), scoreText: $('scoreText'), wordText: $('wordText'), feedback: $('feedback'),
     correctBtn: $('correctBtn'), skipBtn: $('skipBtn'), finalScore: $('finalScore'), resultsList: $('resultsList'), playAgainBtn: $('playAgainBtn'), resultsHomeBtn: $('resultsHomeBtn'),
     rulesBtn: $('rulesBtn'), rulesDialog: $('rulesDialog'), closeRulesBtn: $('closeRulesBtn')
   };
+
+  const deckGlows = ['rgba(96,165,250,.38)','rgba(255,204,77,.34)','rgba(52,211,153,.30)','rgba(244,114,182,.28)','rgba(192,132,252,.26)','rgba(251,146,60,.26)'];
 
   const state = {
     selectedDeck: null,
@@ -61,24 +63,54 @@
   }
 
   function updateCustomCount() {
-    els.customCount.textContent = `${getCustomWords().length} מילים שמורות`;
+    const count = getCustomWords().length;
+    els.customCount.textContent = count ? `${count} מילים שמורות` : 'עדיין לא נשמרו מילים';
+  }
+
+  function getVisibleDecks() {
+    const allDecks = [...decks];
+    const custom = getCustomWords();
+    if (custom.length >= 3) {
+      allDecks.push({
+        id: 'custom',
+        name: 'החבילה שלי',
+        icon: '✍️',
+        description: 'המילים שאתה בוחר בעצמך',
+        words: custom
+      });
+    }
+    return allDecks;
+  }
+
+  function updateTotals(allDecks) {
+    els.totalDecks.textContent = allDecks.length;
+    const total = allDecks.reduce((sum, deck) => sum + deck.words.length, 0);
+    els.totalWords.textContent = total.toLocaleString('he-IL');
   }
 
   function renderDecks() {
     els.deckGrid.innerHTML = '';
-    const allDecks = [...decks];
-    const custom = getCustomWords();
-    if (custom.length >= 3) allDecks.push({ id: 'custom', name: 'החבילה שלי', icon: '✍️', words: custom });
+    const allDecks = getVisibleDecks();
+    updateTotals(allDecks);
 
-    allDecks.forEach(deck => {
+    allDecks.forEach((deck, index) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'deck-card';
+      button.style.setProperty('--deck-glow', deckGlows[index % deckGlows.length]);
+      const description = deck.description || 'חבילה מעולה למשחק מהיר';
       button.innerHTML = `
-        <div class="deck-icon">${deck.icon || '🎴'}</div>
-        <div>
+        <div class="deck-top">
+          <div class="deck-icon-wrap">${deck.icon || '🎴'}</div>
+          <div class="deck-count">${deck.words.length} מילים</div>
+        </div>
+        <div class="deck-body">
           <div class="deck-name">${escapeHtml(deck.name)}</div>
-          <div class="deck-meta">${deck.words.length} מילים</div>
+          <div class="deck-desc">${escapeHtml(description)}</div>
+        </div>
+        <div class="deck-footer">
+          <span class="deck-tag">התחל משחק</span>
+          <span class="deck-arrow">←</span>
         </div>`;
       button.addEventListener('click', () => chooseDeck(deck));
       els.deckGrid.appendChild(button);
@@ -93,6 +125,7 @@
     state.selectedDeck = { ...deck, words: [...deck.words] };
     state.duration = Number(els.duration.value) || 60;
     els.readyDeckName.textContent = deck.name;
+    els.readyDeckMeta.textContent = `${deck.words.length} מילים • ${deck.description || 'מוכן לסיבוב חדש'}`;
     els.sensorMessage.textContent = '';
     show(els.ready);
   }
