@@ -1,5 +1,5 @@
-const CACHE = 'al-harosh-v3';
-const ASSETS = ['./','./index.html','./styles.css','./words.js','./words-more.js','./app.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
+const CACHE = 'al-harosh-v4';
+const ASSETS = ['./','./index.html','./styles.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./app.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));
 self.addEventListener('fetch', event => {
