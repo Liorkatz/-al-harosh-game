@@ -55,6 +55,91 @@
     getAudio();
   }
 
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, ch => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[ch]));
+  }
+
+  function injectRoundControlsStyle() {
+    if (document.getElementById('roundControlsStyle')) return;
+    const style = document.createElement('style');
+    style.id = 'roundControlsStyle';
+    style.textContent = `
+      #countdownScreen .round-exit-btn,
+      #gameScreen .round-exit-btn {
+        position: absolute;
+        left: max(12px, env(safe-area-inset-left));
+        top: max(12px, env(safe-area-inset-top));
+        z-index: 40;
+        border: 1px solid rgba(255,255,255,.18);
+        background: rgba(15,23,42,.78);
+        color: #f8fafc;
+        border-radius: 999px;
+        padding: 7px 11px;
+        font-size: .8rem;
+        font-weight: 900;
+        backdrop-filter: blur(10px);
+      }
+      #countdownScreen .round-exit-btn:active,
+      #gameScreen .round-exit-btn:active { transform: scale(.96); }
+      #countdownScreen .game-topline,
+      #gameScreen .game-topline { padding-left: 86px; }
+      .result-status.timeout { color: var(--accent, #ffcc4d); }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function addExitButton(screenId, buttonId) {
+    const screen = document.getElementById(screenId);
+    if (!screen || document.getElementById(buttonId)) return;
+    const btn = document.createElement('button');
+    btn.id = buttonId;
+    btn.type = 'button';
+    btn.className = 'round-exit-btn';
+    btn.textContent = 'יציאה ✕';
+    btn.setAttribute('aria-label', 'יציאה מהמשחק');
+    btn.addEventListener('click', () => {
+      if (!window.confirm('לצאת מהמשחק הנוכחי?')) return;
+      const homeBtn = document.getElementById('resultsHomeBtn');
+      if (homeBtn) homeBtn.click();
+    });
+    screen.appendChild(btn);
+  }
+
+  function setupTimeoutWordResult() {
+    const resultsScreen = document.getElementById('resultsScreen');
+    const resultsList = document.getElementById('resultsList');
+    const timer = document.getElementById('timerText');
+    const word = document.getElementById('wordText');
+    if (!resultsScreen || !resultsList || !timer || !word) return;
+
+    const observer = new MutationObserver(() => {
+      const active = resultsScreen.classList.contains('active');
+      if (!active) {
+        delete resultsScreen.dataset.timeoutWordAdded;
+        return;
+      }
+      if (resultsScreen.dataset.timeoutWordAdded === '1') return;
+      if (timer.textContent.trim() !== '00:00') return;
+
+      const lastWord = word.textContent.trim();
+      if (!lastWord) return;
+
+      if (resultsList.textContent.includes('לא נרשמו תשובות בסיבוב')) {
+        resultsList.innerHTML = '';
+      }
+
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.innerHTML = `<strong>${escapeHtml(lastWord)}</strong><span class="result-status timeout">⏱ נגמר הזמן</span>`;
+      resultsList.appendChild(row);
+      resultsScreen.dataset.timeoutWordAdded = '1';
+    });
+
+    observer.observe(resultsScreen, { attributes: true, attributeFilter: ['class'] });
+  }
+
   document.addEventListener('pointerdown', primeAudio, { once: true, capture: true });
   const startBtn = document.getElementById('sensorStartBtn');
   if (startBtn) startBtn.addEventListener('click', primeAudio, { capture: true });
@@ -87,4 +172,9 @@
     });
     timerObserver.observe(timer, { childList: true, characterData: true, subtree: true });
   }
+
+  injectRoundControlsStyle();
+  addExitButton('countdownScreen', 'countdownExitBtn');
+  addExitButton('gameScreen', 'gameExitBtn');
+  setupTimeoutWordResult();
 })();
