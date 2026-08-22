@@ -1,5 +1,5 @@
-const CACHE = 'al-harosh-v6';
-const ASSETS = ['./','./index.html','./styles.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./app.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
+const CACHE = 'al-harosh-v7';
+const ASSETS = ['./','./index.html','./styles.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./app.js','./sounds.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
