@@ -2,16 +2,18 @@
   'use strict';
 
   const decks = Array.isArray(window.HEBREW_DECKS) ? window.HEBREW_DECKS : [];
+  const hardWords = window.HARD_WORDS || {};
   const screens = [...document.querySelectorAll('.screen')];
   const $ = (id) => document.getElementById(id);
 
   const els = {
     home: $('homeScreen'), ready: $('readyScreen'), countdown: $('countdownScreen'), game: $('gameScreen'), results: $('resultsScreen'),
     deckGrid: $('deckGrid'), duration: $('durationSelect'), passPenalty: $('passPenalty'), totalWords: $('totalWords'), totalDecks: $('totalDecks'),
+    difficultyButtons: [...document.querySelectorAll('[data-difficulty]')],
     customWords: $('customWords'), customCount: $('customCount'), saveCustomBtn: $('saveCustomBtn'),
     readyDeckName: $('readyDeckName'), readyDeckMeta: $('readyDeckMeta'), sensorStartBtn: $('sensorStartBtn'), sensorMessage: $('sensorMessage'), backHomeBtn: $('backHomeBtn'),
-    countdownDeck: $('countdownDeck'), countdownNumber: $('countdownNumber'),
-    gameDeckName: $('gameDeckName'), timerText: $('timerText'), scoreText: $('scoreText'), wordText: $('wordText'), feedback: $('feedback'),
+    countdownDeck: $('countdownDeck'), countdownNumber: $('countdownNumber'), countdownExitBtn: $('countdownExitBtn'),
+    gameDeckName: $('gameDeckName'), timerText: $('timerText'), scoreText: $('scoreText'), wordText: $('wordText'), feedback: $('feedback'), gameExitBtn: $('gameExitBtn'),
     correctBtn: $('correctBtn'), skipBtn: $('skipBtn'), finalScore: $('finalScore'), resultsList: $('resultsList'), playAgainBtn: $('playAgainBtn'), resultsHomeBtn: $('resultsHomeBtn'),
     rulesBtn: $('rulesBtn'), rulesDialog: $('rulesDialog'), closeRulesBtn: $('closeRulesBtn')
   };
@@ -26,6 +28,7 @@
     score: 0,
     duration: 60,
     remaining: 60,
+    difficulty: localStorage.getItem('alHaroshDifficulty') === 'hard' ? 'hard' : 'normal',
     timerId: null,
     countdownId: null,
     isPlaying: false,
@@ -55,6 +58,30 @@
     return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
   }
 
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  }
+
+  function difficultyLabel() {
+    return state.difficulty === 'hard' ? 'מאתגר 🔥' : 'רגיל';
+  }
+
+  function syncDifficultyButtons() {
+    els.difficultyButtons.forEach(btn => {
+      const active = btn.dataset.difficulty === state.difficulty;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function wordsForDeck(deck) {
+    if (state.difficulty === 'hard' && deck.id !== 'custom') {
+      const list = hardWords[deck.id];
+      if (Array.isArray(list) && list.length >= 3) return list;
+    }
+    return deck.words;
+  }
+
   function getCustomWords() {
     return (localStorage.getItem('alHaroshCustomWords') || '')
       .split(/\n+/)
@@ -71,20 +98,14 @@
     const allDecks = [...decks];
     const custom = getCustomWords();
     if (custom.length >= 3) {
-      allDecks.push({
-        id: 'custom',
-        name: 'החבילה שלי',
-        icon: '✍️',
-        description: 'המילים שאתה בוחר בעצמך',
-        words: custom
-      });
+      allDecks.push({ id: 'custom', name: 'החבילה שלי', icon: '✍️', description: 'המילים שאתה בוחר בעצמך', words: custom });
     }
     return allDecks;
   }
 
   function updateTotals(allDecks) {
     els.totalDecks.textContent = allDecks.length;
-    const total = allDecks.reduce((sum, deck) => sum + deck.words.length, 0);
+    const total = allDecks.reduce((sum, deck) => sum + wordsForDeck(deck).length, 0);
     els.totalWords.textContent = total.toLocaleString('he-IL');
   }
 
@@ -94,6 +115,7 @@
     updateTotals(allDecks);
 
     allDecks.forEach((deck, index) => {
+      const activeWords = wordsForDeck(deck);
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'deck-card';
@@ -102,14 +124,14 @@
       button.innerHTML = `
         <div class="deck-top">
           <div class="deck-icon-wrap">${deck.icon || '🎴'}</div>
-          <div class="deck-count">${deck.words.length} מילים</div>
+          <div class="deck-count">${activeWords.length} מילים</div>
         </div>
         <div class="deck-body">
           <div class="deck-name">${escapeHtml(deck.name)}</div>
           <div class="deck-desc">${escapeHtml(description)}</div>
         </div>
         <div class="deck-footer">
-          <span class="deck-tag">התחל משחק</span>
+          <span class="deck-tag">${state.difficulty === 'hard' && deck.id !== 'custom' ? 'מאתגר 🔥' : 'התחל משחק'}</span>
           <span class="deck-arrow">←</span>
         </div>`;
       button.addEventListener('click', () => chooseDeck(deck));
@@ -117,17 +139,22 @@
     });
   }
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
-  }
-
   function chooseDeck(deck) {
-    state.selectedDeck = { ...deck, words: [...deck.words] };
+    const activeWords = [...wordsForDeck(deck)];
+    state.selectedDeck = { ...deck, words: activeWords };
     state.duration = Number(els.duration.value) || 60;
     els.readyDeckName.textContent = deck.name;
-    els.readyDeckMeta.textContent = `${deck.words.length} מילים • ${deck.description || 'מוכן לסיבוב חדש'}`;
+    els.readyDeckMeta.textContent = `${difficultyLabel()} • ${activeWords.length} מילים • ${deck.description || 'מוכן לסיבוב חדש'}`;
     els.sensorMessage.textContent = '';
     show(els.ready);
+  }
+
+  function setDifficulty(value) {
+    if (!['normal', 'hard'].includes(value)) return;
+    state.difficulty = value;
+    localStorage.setItem('alHaroshDifficulty', value);
+    syncDifficultyButtons();
+    renderDecks();
   }
 
   function orientationAngle() {
@@ -185,7 +212,7 @@
     await requestWakeLock();
     setupRound();
     detectLandscapeSide();
-    els.countdownDeck.textContent = state.selectedDeck.name;
+    els.countdownDeck.textContent = `${state.selectedDeck.name} • ${difficultyLabel()}`;
     show(els.countdown);
     startCountdown();
   }
@@ -210,7 +237,7 @@
     state.isPlaying = true;
     state.tiltReady = true;
     state.lastDecisionAt = 0;
-    els.gameDeckName.textContent = state.selectedDeck.name;
+    els.gameDeckName.textContent = `${state.selectedDeck.name} • ${state.difficulty === 'hard' ? '🔥' : ''}`;
     show(els.game);
     nextWord();
     updateHud();
@@ -248,7 +275,6 @@
     state.score += correct ? 1 : (els.passPenalty.checked ? -1 : 0);
     showFeedback(correct);
     vibrate(correct ? [30, 35, 30] : 55);
-    beep(correct ? 740 : 230, correct ? 0.06 : 0.09);
     nextWord();
     updateHud();
   }
@@ -267,13 +293,11 @@
     if (!state.isPlaying || typeof event.gamma !== 'number') return;
     const g = event.gamma;
     const abs = Math.abs(g);
-
     if (abs >= 60) {
       state.tiltReady = true;
       return;
     }
     if (!state.tiltReady || abs > 30) return;
-
     state.tiltReady = false;
     const positiveLandscape = state.landscapeSide === 1;
     const isCorrect = positiveLandscape ? g >= 0 : g < 0;
@@ -286,24 +310,9 @@
     }
   }
 
-  function beep(freq, duration) {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.045, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + duration);
-      osc.addEventListener('ended', () => ctx.close());
-    } catch (_) {}
-  }
-
   async function finishRound() {
     if (!state.isPlaying) return;
+    if (state.currentWord) state.history.push({ word: state.currentWord, type: 'timeout' });
     state.isPlaying = false;
     clearInterval(state.timerId);
     state.remaining = 0;
@@ -323,7 +332,9 @@
     state.history.forEach(item => {
       const row = document.createElement('div');
       row.className = 'result-row';
-      row.innerHTML = `<strong>${escapeHtml(item.word)}</strong><span class="result-status ${item.type === 'correct' ? 'good' : 'bad'}">${item.type === 'correct' ? '✓ נכון' : '↗ דילוג'}</span>`;
+      const statusClass = item.type === 'correct' ? 'good' : (item.type === 'timeout' ? 'timeout' : 'bad');
+      const statusText = item.type === 'correct' ? '✓ נכון' : (item.type === 'timeout' ? '⏱ נגמר הזמן' : '↗ דילוג');
+      row.innerHTML = `<strong>${escapeHtml(item.word)}</strong><span class="result-status ${statusClass}">${statusText}</span>`;
       els.resultsList.appendChild(row);
     });
   }
@@ -336,12 +347,21 @@
     show(els.home);
   }
 
+  function exitRound() {
+    if (!window.confirm('לצאת מהמשחק הנוכחי?')) return;
+    backHome();
+  }
+
   els.sensorStartBtn.addEventListener('click', beginFlow);
   els.backHomeBtn.addEventListener('click', backHome);
   els.correctBtn.addEventListener('click', () => decide('correct'));
   els.skipBtn.addEventListener('click', () => decide('skip'));
   els.playAgainBtn.addEventListener('click', beginFlow);
   els.resultsHomeBtn.addEventListener('click', backHome);
+  if (els.countdownExitBtn) els.countdownExitBtn.addEventListener('click', exitRound);
+  if (els.gameExitBtn) els.gameExitBtn.addEventListener('click', exitRound);
+
+  els.difficultyButtons.forEach(btn => btn.addEventListener('click', () => setDifficulty(btn.dataset.difficulty)));
 
   els.saveCustomBtn.addEventListener('click', () => {
     const words = els.customWords.value.split(/\n+/).map(w => w.trim()).filter(Boolean);
@@ -362,15 +382,14 @@
 
   window.addEventListener('orientationchange', detectLandscapeSide);
   if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', detectLandscapeSide);
-
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.isPlaying) requestWakeLock();
   });
-
   window.addEventListener('beforeunload', () => releaseWakeLock());
 
   const savedCustom = localStorage.getItem('alHaroshCustomWords') || '';
   els.customWords.value = savedCustom;
+  syncDifficultyButtons();
   updateCustomCount();
   renderDecks();
 
