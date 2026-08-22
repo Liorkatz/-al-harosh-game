@@ -8,10 +8,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="על הראש" />
   <title>על הראש — משחק ניחושים בעברית</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=7" />
-  <link rel="icon" href="./icon.svg?v=7" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./icon-180.png?v=7" />
-  <link rel="stylesheet" href="./styles.css?v=7" />
+  <link rel="manifest" href="./manifest.webmanifest?v=9" />
+  <link rel="icon" href="./icon.svg?v=9" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon-180.png?v=9" />
+  <link rel="stylesheet" href="./styles.css?v=9" />
+  <link rel="stylesheet" href="./difficulty.css?v=9" />
 </head>
 <body>
   <div class="app-glow app-glow-a"></div>
@@ -34,18 +35,9 @@
             <h2>בחר חבילה, שים את הטלפון על המצח — ותתחילו לצחוק</h2>
             <p>מטה = נכון, מעלה = דילוג. עובד עם חיישני תנועה וגם עם כפתורי גיבוי.</p>
             <div class="hero-stats">
-              <div class="stat-pill">
-                <strong id="totalDecks">12</strong>
-                <span>חבילות</span>
-              </div>
-              <div class="stat-pill">
-                <strong id="totalWords">0</strong>
-                <span>מילים</span>
-              </div>
-              <div class="stat-pill">
-                <strong>עברית</strong>
-                <span>מותאם לנייד</span>
-              </div>
+              <div class="stat-pill"><strong id="totalDecks">12</strong><span>חבילות</span></div>
+              <div class="stat-pill"><strong id="totalWords">0</strong><span>מילים</span></div>
+              <div class="stat-pill"><strong>עברית</strong><span>מותאם לנייד</span></div>
             </div>
           </div>
           <div class="hero-visual" aria-hidden="true">
@@ -58,6 +50,13 @@
         </div>
 
         <div class="settings-row">
+          <div class="difficulty-block">
+            <span class="difficulty-title">רמה</span>
+            <div class="difficulty-segment" role="group" aria-label="רמת קושי">
+              <button type="button" data-difficulty="normal" aria-pressed="true">רגיל</button>
+              <button type="button" data-difficulty="hard" aria-pressed="false">מאתגר 🔥</button>
+            </div>
+          </div>
           <label>
             זמן לסיבוב
             <select id="durationSelect">
@@ -111,6 +110,7 @@
         <div class="game-topline">
           <span id="countdownDeck"></span>
           <span>התכונן</span>
+          <button id="countdownExitBtn" class="game-exit-btn" type="button">יציאה ✕</button>
         </div>
         <div id="countdownNumber" class="countdown-number">3</div>
         <div class="orientation-hint">החזק לרוחב • מסך פונה לחברים</div>
@@ -120,7 +120,10 @@
         <div class="game-topline">
           <span id="gameDeckName"></span>
           <span id="timerText" class="timer">01:00</span>
-          <span id="scoreText">0 נק׳</span>
+          <div class="game-left-tools">
+            <span id="scoreText">0 נק׳</span>
+            <button id="gameExitBtn" class="game-exit-btn" type="button">יציאה ✕</button>
+          </div>
         </div>
 
         <div id="wordCard" class="word-card">
@@ -159,19 +162,20 @@
     <button id="closeRulesBtn" class="dialog-close" type="button" aria-label="סגור">×</button>
     <h2>איך משחקים?</h2>
     <ol>
-      <li>בחר חבילת מילים וזמן לסיבוב.</li>
+      <li>בחר חבילת מילים ורמת קושי: רגיל או מאתגר.</li>
       <li>השחקן המנחש מחזיק את הטלפון לרוחב על המצח, בלי לראות את המסך.</li>
       <li>החברים נותנים רמזים בלי לומר את המילה שמופיעה.</li>
       <li>ניחשת נכון? הטה את החלק העליון של הטלפון כלפי מטה.</li>
       <li>רוצה לדלג? הטה לכיוון ההפוך.</li>
       <li>המטרה: לצבור כמה שיותר תשובות נכונות לפני שהזמן נגמר.</li>
     </ol>
-    <p class="muted">אם חיישני ההטיה אינם זמינים, אפשר להשתמש בכפתורי "נכון" ו"דלג" שעל המסך.</p>
+    <p class="muted">במצב מאתגר נבחר מאגר נפרד של מושגים, שמות וביטויים פחות צפויים וקשים יותר לניחוש.</p>
   </dialog>
 
-  <script src="./words.js?v=7"></script>
-  <script src="./words-more.js?v=7"></script>
-  <script src="./app.js?v=7"></script>
-  <script src="./sounds.js?v=7"></script>
+  <script src="./words.js?v=9"></script>
+  <script src="./words-more.js?v=9"></script>
+  <script src="./hard-words.js?v=9"></script>
+  <script src="./app.js?v=9"></script>
+  <script src="./sounds.js?v=9"></script>
 </body>
 </html>
