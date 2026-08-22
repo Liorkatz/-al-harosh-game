@@ -1,4 +1,4 @@
-const CACHE = 'al-harosh-v7';
+const CACHE = 'al-harosh-v8';
 const ASSETS = ['./','./index.html','./styles.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./app.js','./sounds.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -12,6 +12,15 @@ self.addEventListener('activate', event => {
 });
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('/sounds.js')) {
+    event.respondWith(fetch(new Request(event.request, { cache: 'reload' })).then(response => {
+      const copy = response.clone();
+      caches.open(CACHE).then(cache => cache.put(event.request, copy));
+      return response;
+    }).catch(() => caches.match(event.request)));
+    return;
+  }
   event.respondWith(caches.match(event.request).then(hit => hit || fetch(event.request).then(response => {
     const copy = response.clone();
     caches.open(CACHE).then(cache => cache.put(event.request, copy));
