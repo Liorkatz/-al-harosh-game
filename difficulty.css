@@ -1,0 +1,59 @@
+.difficulty-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 800;
+}
+.difficulty-title { color: var(--text); }
+.difficulty-segment {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+}
+.difficulty-segment button {
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 13px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 900;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease, transform .1s ease;
+}
+.difficulty-segment button.active {
+  color: #161616;
+  background: linear-gradient(180deg, #ffd764, var(--accent));
+  box-shadow: 0 6px 16px rgba(255,204,77,.2);
+}
+.difficulty-segment button:active { transform: scale(.97); }
+.game-left-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+}
+.game-exit-btn {
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: var(--text);
+  background: rgba(255,255,255,.08);
+  font-size: .8rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.game-exit-btn:active { transform: scale(.96); }
+.result-status.timeout { color: var(--accent); }
+@media (max-width: 560px) {
+  .difficulty-block { width: 100%; }
+  .difficulty-segment { width: 100%; }
+  .difficulty-segment button { padding: 9px 8px; }
+  .settings-row { align-items: stretch; }
+  .game-exit-btn { padding: 6px 9px; font-size: .74rem; }
+  .game-left-tools { gap: 6px; }
+}
