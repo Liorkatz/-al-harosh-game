@@ -1,0 +1,30 @@
+# גרסאות ונקודות חזרה
+
+הפרויקט נשמר כך שכל שדרוג משמעותי מקבל נקודת חזרה לפני שינוי הקוד.
+
+## נקודות חזרה קיימות
+
+| גרסה | מצב | קישור |
+|---|---|---|
+| v1.2.0 — לפני שדרוג העיצוב המקצועי | ארכיון יציב | https://github.com/Liorkatz/-al-harosh-game/tree/archive/v1.2.0-before-pro-ui |
+| main | הגרסה הפעילה באתר | https://github.com/Liorkatz/-al-harosh-game/tree/main |
+
+## איך חוזרים אחורה
+
+### דרך GitHub בלי פקודות
+1. פותחים את ענף הארכיון הרצוי.
+2. בוחרים **Contribute → Open pull request**.
+3. יוצרים PR מהארכיון אל `main` וממזגים.
+
+### דרך Git
+```bash
+git fetch origin
+git switch main
+git reset --hard origin/archive/v1.2.0-before-pro-ui
+git push --force-with-lease origin main
+```
+
+> עדיף בדרך כלל להשתמש ב-PR ולא ב-force push, כדי לשמור היסטוריה ברורה.
+
+## נוהל לגרסאות הבאות
+לפני כל שדרוג גדול ייווצר ענף בשם `archive/<version>-before-<change>`. אחרי שהשדרוג נבדק, ניתן ליצור גם ענף `release/<version>` שמצביע בדיוק על הגרסה שפורסמה.
