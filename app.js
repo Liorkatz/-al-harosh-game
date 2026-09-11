@@ -7,14 +7,17 @@
   const $ = (id) => document.getElementById(id);
 
   const els = {
+    setup: $('playerSetupScreen'), playerCount: $('playerCount'), playerNames: $('playerNames'), startPlayersBtn: $('startPlayersBtn'),
     home: $('homeScreen'), ready: $('readyScreen'), countdown: $('countdownScreen'), game: $('gameScreen'), results: $('resultsScreen'),
+    matchPlayersSummary: $('matchPlayersSummary'), changePlayersBtn: $('changePlayersBtn'),
     deckGrid: $('deckGrid'), duration: $('durationSelect'), passPenalty: $('passPenalty'), totalWords: $('totalWords'), totalDecks: $('totalDecks'),
     difficultyButtons: [...document.querySelectorAll('[data-difficulty]')],
     customWords: $('customWords'), customCount: $('customCount'), saveCustomBtn: $('saveCustomBtn'),
-    readyDeckName: $('readyDeckName'), readyDeckMeta: $('readyDeckMeta'), sensorStartBtn: $('sensorStartBtn'), sensorMessage: $('sensorMessage'), backHomeBtn: $('backHomeBtn'),
+    readyPlayerName: $('readyPlayerName'), readyDeckName: $('readyDeckName'), readyDeckMeta: $('readyDeckMeta'), sensorStartBtn: $('sensorStartBtn'), sensorMessage: $('sensorMessage'), backHomeBtn: $('backHomeBtn'),
     countdownDeck: $('countdownDeck'), countdownNumber: $('countdownNumber'), countdownExitBtn: $('countdownExitBtn'),
-    gameDeckName: $('gameDeckName'), timerText: $('timerText'), scoreText: $('scoreText'), wordText: $('wordText'), feedback: $('feedback'), gameExitBtn: $('gameExitBtn'),
+    gameDeckName: $('gameDeckName'), gamePlayerName: $('gamePlayerName'), timerText: $('timerText'), scoreText: $('scoreText'), wordText: $('wordText'), feedback: $('feedback'), gameExitBtn: $('gameExitBtn'),
     correctBtn: $('correctBtn'), skipBtn: $('skipBtn'), finalScore: $('finalScore'), resultsList: $('resultsList'), playAgainBtn: $('playAgainBtn'), resultsHomeBtn: $('resultsHomeBtn'),
+    resultsTitle: $('resultsTitle'), resultsPlayerName: $('resultsPlayerName'), scoreboardPanel: $('scoreboardPanel'), scoreboardTitle: $('scoreboardTitle'), scoreboardList: $('scoreboardList'),
     rulesBtn: $('rulesBtn'), rulesDialog: $('rulesDialog'), closeRulesBtn: $('closeRulesBtn')
   };
 
@@ -29,6 +32,10 @@
     duration: 60,
     remaining: 60,
     difficulty: localStorage.getItem('alHaroshDifficulty') === 'hard' ? 'hard' : 'normal',
+    players: [],
+    playerIndex: 0,
+    cycle: 1,
+    matchComplete: false,
     timerId: null,
     countdownId: null,
     isPlaying: false,
@@ -66,12 +73,81 @@
     return state.difficulty === 'hard' ? 'מאתגר 🔥' : 'רגיל';
   }
 
+  function currentPlayer() {
+    return state.players[state.playerIndex] || { name: 'שחקן 1', total: 0 };
+  }
+
   function syncDifficultyButtons() {
     els.difficultyButtons.forEach(btn => {
       const active = btn.dataset.difficulty === state.difficulty;
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
+  }
+
+  function loadSavedPlayers() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('alHaroshPlayers') || '{}');
+      const names = Array.isArray(saved.names) ? saved.names.slice(0, 8) : [];
+      const count = Math.min(8, Math.max(1, Number(saved.count) || names.length || 1));
+      els.playerCount.value = String(count);
+      renderPlayerNameFields(count, names);
+    } catch (_) {
+      els.playerCount.value = '1';
+      renderPlayerNameFields(1, []);
+    }
+  }
+
+  function renderPlayerNameFields(count, preferredNames) {
+    const existing = [...els.playerNames.querySelectorAll('input')].map(input => input.value);
+    const source = Array.isArray(preferredNames) ? preferredNames : existing;
+    els.playerNames.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const label = document.createElement('label');
+      label.className = 'player-name-field';
+      label.innerHTML = `<span>שחקן ${i + 1}</span><input type="text" maxlength="24" autocomplete="off" placeholder="שחקן ${i + 1}" value="${escapeHtml(source[i] || '')}">`;
+      els.playerNames.appendChild(label);
+    }
+  }
+
+  function updatePlayersBar() {
+    els.matchPlayersSummary.innerHTML = '';
+    state.players.forEach(player => {
+      const chip = document.createElement('span');
+      chip.className = 'player-mini-chip';
+      chip.textContent = player.name;
+      els.matchPlayersSummary.appendChild(chip);
+    });
+  }
+
+  function startPlayersSetup() {
+    const count = Math.min(8, Math.max(1, Number(els.playerCount.value) || 1));
+    const inputs = [...els.playerNames.querySelectorAll('input')];
+    state.players = Array.from({ length: count }, (_, index) => ({
+      name: (inputs[index] && inputs[index].value.trim()) || `שחקן ${index + 1}`,
+      total: 0
+    }));
+    state.playerIndex = 0;
+    state.cycle = 1;
+    state.matchComplete = false;
+    localStorage.setItem('alHaroshPlayers', JSON.stringify({ count, names: state.players.map(p => p.name) }));
+    updatePlayersBar();
+    show(els.home);
+  }
+
+  function openPlayerSetup() {
+    const names = state.players.length ? state.players.map(p => p.name) : undefined;
+    const count = state.players.length || Number(els.playerCount.value) || 1;
+    els.playerCount.value = String(count);
+    renderPlayerNameFields(count, names);
+    show(els.setup);
+  }
+
+  function resetMatchScores() {
+    state.players.forEach(player => { player.total = 0; });
+    state.playerIndex = 0;
+    state.cycle = 1;
+    state.matchComplete = false;
   }
 
   function wordsForDeck(deck) {
@@ -139,14 +215,23 @@
     });
   }
 
+  function prepareReadyForCurrentPlayer() {
+    const player = currentPlayer();
+    els.readyPlayerName.textContent = state.players.length > 1 ? `תור: ${player.name}` : (player.name !== 'שחקן 1' ? player.name : '');
+    els.readyDeckName.textContent = state.selectedDeck.name;
+    const cycleText = state.players.length > 1 ? `סבב ${state.cycle} • ` : '';
+    els.readyDeckMeta.textContent = `${cycleText}${difficultyLabel()} • ${state.selectedDeck.words.length} מילים • ${state.selectedDeck.description || 'מוכן לסיבוב חדש'}`;
+    els.sensorStartBtn.textContent = state.players.length > 1 ? `התחל תור של ${player.name}` : 'הפעל חיישנים והתחל';
+    els.sensorMessage.textContent = '';
+    show(els.ready);
+  }
+
   function chooseDeck(deck) {
     const activeWords = [...wordsForDeck(deck)];
     state.selectedDeck = { ...deck, words: activeWords };
     state.duration = Number(els.duration.value) || 60;
-    els.readyDeckName.textContent = deck.name;
-    els.readyDeckMeta.textContent = `${difficultyLabel()} • ${activeWords.length} מילים • ${deck.description || 'מוכן לסיבוב חדש'}`;
-    els.sensorMessage.textContent = '';
-    show(els.ready);
+    resetMatchScores();
+    prepareReadyForCurrentPlayer();
   }
 
   function setDifficulty(value) {
@@ -212,7 +297,10 @@
     await requestWakeLock();
     setupRound();
     detectLandscapeSide();
-    els.countdownDeck.textContent = `${state.selectedDeck.name} • ${difficultyLabel()}`;
+    const player = currentPlayer();
+    els.countdownDeck.textContent = state.players.length > 1
+      ? `${player.name} • ${state.selectedDeck.name}`
+      : `${state.selectedDeck.name} • ${difficultyLabel()}`;
     show(els.countdown);
     startCountdown();
   }
@@ -234,10 +322,12 @@
   }
 
   function startRound() {
+    const player = currentPlayer();
     state.isPlaying = true;
     state.tiltReady = true;
     state.lastDecisionAt = 0;
-    els.gameDeckName.textContent = `${state.selectedDeck.name} • ${state.difficulty === 'hard' ? '🔥' : ''}`;
+    els.gameDeckName.textContent = `${state.selectedDeck.name}${state.difficulty === 'hard' ? ' • 🔥' : ''}`;
+    els.gamePlayerName.textContent = state.players.length > 1 ? player.name : '';
     show(els.game);
     nextWord();
     updateHud();
@@ -317,14 +407,52 @@
     clearInterval(state.timerId);
     state.remaining = 0;
     updateHud();
+    currentPlayer().total += state.score;
+    state.matchComplete = state.playerIndex >= state.players.length - 1;
     await releaseWakeLock();
     renderResults();
     show(els.results);
   }
 
+  function renderScoreboard() {
+    const ranked = state.players
+      .map((player, index) => ({ ...player, originalIndex: index }))
+      .sort((a, b) => b.total - a.total || a.originalIndex - b.originalIndex);
+    els.scoreboardList.innerHTML = '';
+    ranked.forEach((player, index) => {
+      const row = document.createElement('div');
+      row.className = `scoreboard-row${index === 0 ? ' leader' : ''}`;
+      row.innerHTML = `<span class="scoreboard-rank">${index === 0 ? '🏆' : index + 1}</span><span class="scoreboard-name">${escapeHtml(player.name)}</span><span class="scoreboard-score">${player.total} נק׳</span>`;
+      els.scoreboardList.appendChild(row);
+    });
+  }
+
   function renderResults() {
+    const player = currentPlayer();
     els.finalScore.textContent = state.score;
     els.resultsList.innerHTML = '';
+    els.resultsPlayerName.textContent = state.players.length > 1 ? `${player.name} • ${state.score} נק׳ בתור הזה` : '';
+    els.scoreboardPanel.hidden = true;
+
+    if (state.players.length > 1) {
+      if (state.matchComplete) {
+        els.resultsTitle.textContent = `סיום סבב ${state.cycle}`;
+        els.scoreboardTitle.textContent = 'הדירוג המצטבר';
+        renderScoreboard();
+        els.scoreboardPanel.hidden = false;
+        els.playAgainBtn.textContent = 'סיבוב נוסף';
+      } else {
+        const next = state.players[state.playerIndex + 1];
+        els.resultsTitle.textContent = `התור של ${player.name} הסתיים`;
+        els.playAgainBtn.textContent = `העבר ל־${next.name}`;
+      }
+      els.resultsHomeBtn.textContent = 'סיים משחק';
+    } else {
+      els.resultsTitle.textContent = 'נגמר הזמן';
+      els.playAgainBtn.textContent = 'שחק שוב';
+      els.resultsHomeBtn.textContent = 'בחר חבילה אחרת';
+    }
+
     if (!state.history.length) {
       els.resultsList.innerHTML = '<div class="result-row"><span>לא נרשמו תשובות בסיבוב</span></div>';
       return;
@@ -347,17 +475,41 @@
     show(els.home);
   }
 
-  function exitRound() {
-    if (!window.confirm('לצאת מהמשחק הנוכחי?')) return;
+  function finishMatchToHome() {
+    resetMatchScores();
+    updatePlayersBar();
     backHome();
   }
 
+  function exitRound() {
+    if (!window.confirm('לצאת מהמשחק הנוכחי? הניקוד של המשחק יתאפס.')) return;
+    finishMatchToHome();
+  }
+
+  function continueAfterResults() {
+    if (state.players.length <= 1) {
+      beginFlow();
+      return;
+    }
+    if (state.matchComplete) {
+      state.cycle += 1;
+      state.playerIndex = 0;
+      state.matchComplete = false;
+    } else {
+      state.playerIndex += 1;
+    }
+    prepareReadyForCurrentPlayer();
+  }
+
+  els.playerCount.addEventListener('change', () => renderPlayerNameFields(Number(els.playerCount.value) || 1));
+  els.startPlayersBtn.addEventListener('click', startPlayersSetup);
+  els.changePlayersBtn.addEventListener('click', openPlayerSetup);
   els.sensorStartBtn.addEventListener('click', beginFlow);
   els.backHomeBtn.addEventListener('click', backHome);
   els.correctBtn.addEventListener('click', () => decide('correct'));
   els.skipBtn.addEventListener('click', () => decide('skip'));
-  els.playAgainBtn.addEventListener('click', beginFlow);
-  els.resultsHomeBtn.addEventListener('click', backHome);
+  els.playAgainBtn.addEventListener('click', continueAfterResults);
+  els.resultsHomeBtn.addEventListener('click', finishMatchToHome);
   if (els.countdownExitBtn) els.countdownExitBtn.addEventListener('click', exitRound);
   if (els.gameExitBtn) els.gameExitBtn.addEventListener('click', exitRound);
 
@@ -389,6 +541,7 @@
 
   const savedCustom = localStorage.getItem('alHaroshCustomWords') || '';
   els.customWords.value = savedCustom;
+  loadSavedPlayers();
   syncDifficultyButtons();
   updateCustomCount();
   renderDecks();
