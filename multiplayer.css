@@ -213,6 +213,32 @@
   padding: 18px !important;
 }
 
+/* Strong visual feedback for both tilt gestures and the fallback buttons. */
+#gameScreen .feedback {
+  z-index: 20 !important;
+  border-radius: inherit;
+  color: #fff !important;
+  text-shadow: 0 3px 16px rgba(0,0,0,.35);
+}
+#gameScreen .feedback.show.good {
+  opacity: 1 !important;
+  background: linear-gradient(145deg, rgba(34,197,94,.98), rgba(21,128,61,.98)) !important;
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.16), 0 0 70px rgba(34,197,94,.55) !important;
+}
+#gameScreen .feedback.show.bad {
+  opacity: 1 !important;
+  background: linear-gradient(145deg, rgba(244,63,94,.98), rgba(190,18,60,.98)) !important;
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.14), 0 0 70px rgba(244,63,94,.52) !important;
+}
+#gameScreen .feedback.show.good::before,
+#gameScreen .feedback.show.bad::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,.16), transparent 58%);
+  pointer-events: none;
+}
+
 @media (orientation: landscape) and (max-height: 600px) {
   #gameScreen .fallback-controls {
     margin-top: 5px !important;
