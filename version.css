@@ -1,0 +1,31 @@
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.version-btn {
+  min-height: 42px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-soft);
+}
+.version-btn:hover,
+.version-btn:focus-visible {
+  color: var(--text);
+  border-color: rgba(255,204,77,.5);
+}
+.version-btn:active { transform: scale(.98); }
+.version-btn:disabled { opacity: .72; cursor: wait; }
+@media (max-width: 520px) {
+  .topbar { gap: 8px; }
+  .topbar-actions { gap: 6px; }
+  .version-btn { min-height: 38px; padding: 0 10px; font-size: .72rem; }
+  .icon-btn { width: 42px; height: 42px; }
+}
