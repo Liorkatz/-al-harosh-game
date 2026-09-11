@@ -206,6 +206,13 @@
   padding: 9px 11px !important;
 }
 
+/* Larger in-game word, especially in the landscape orientation used during play. */
+#gameScreen .word-text {
+  font-size: clamp(4rem, min(16vw, 24vh), 10rem) !important;
+  line-height: .98 !important;
+  padding: 18px !important;
+}
+
 @media (orientation: landscape) and (max-height: 600px) {
   #gameScreen .fallback-controls {
     margin-top: 5px !important;
@@ -214,5 +221,9 @@
   #gameScreen .fallback-controls button {
     padding: 8px 12px !important;
     font-size: .88rem !important;
+  }
+  #gameScreen .word-text {
+    font-size: clamp(4.5rem, 24vh, 10rem) !important;
+    padding: 14px 18px !important;
   }
 }
