@@ -126,3 +126,93 @@
 @media (orientation: landscape) and (max-height: 520px) {
   .game-player-name { max-width: 110px; font-size: .8rem; }
 }
+
+/* UI patch: keep the single-player layout unchanged, tidy 2+ players, and simplify the game HUD. */
+#gameScreen #timerText {
+  visibility: hidden !important;
+}
+
+#gameScreen .fallback-controls {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+  opacity: 1 !important;
+}
+#gameScreen .fallback-controls button {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  font-size: .98rem !important;
+  line-height: 1.15 !important;
+  font-weight: 900 !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.16) !important;
+}
+
+.match-players-bar:has(.match-players-summary .player-mini-chip:nth-child(2)) {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+}
+.match-players-bar:has(.match-players-summary .player-mini-chip:nth-child(2)) #inlinePlayersPanel {
+  order: 1;
+}
+.match-players-bar:has(.match-players-summary .player-mini-chip:nth-child(2)) .match-players-summary {
+  order: 2;
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+.match-players-bar:has(.match-players-summary .player-mini-chip:nth-child(2)) .player-mini-chip {
+  display: block !important;
+  width: 100% !important;
+  padding: 4px 2px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-size: .84rem !important;
+}
+
+#inlinePlayersPanel #inlineNamesWrap:has(.player-name-field:nth-child(2)).open {
+  display: block !important;
+}
+#inlinePlayersPanel #inlineNamesWrap:has(.player-name-field:nth-child(2)) .player-names {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  width: 100% !important;
+  margin: 4px 0 0 !important;
+}
+#inlinePlayersPanel #inlineNamesWrap:has(.player-name-field:nth-child(2)) .player-name-field {
+  display: grid !important;
+  grid-template-columns: 72px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 4px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+#inlinePlayersPanel #inlineNamesWrap:has(.player-name-field:nth-child(2)) .player-name-field span {
+  margin: 0 !important;
+  white-space: nowrap;
+}
+#inlinePlayersPanel #inlineNamesWrap:has(.player-name-field:nth-child(2)) .player-name-field input {
+  min-width: 0 !important;
+  padding: 9px 11px !important;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  #gameScreen .fallback-controls {
+    margin-top: 5px !important;
+    gap: 8px !important;
+  }
+  #gameScreen .fallback-controls button {
+    padding: 8px 12px !important;
+    font-size: .88rem !important;
+  }
+}
