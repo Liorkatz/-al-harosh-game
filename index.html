@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="he" dir="rtl" data-app-version="1.1.0">
+<html lang="he" dir="rtl" data-app-version="1.2.0">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
@@ -8,12 +8,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="על הראש" />
   <title>על הראש — משחק ניחושים בעברית</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=11" />
-  <link rel="icon" href="./icon.svg?v=11" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./icon-180.png?v=11" />
-  <link rel="stylesheet" href="./styles.css?v=11" />
-  <link rel="stylesheet" href="./difficulty.css?v=11" />
-  <link rel="stylesheet" href="./version.css?v=11" />
+  <link rel="manifest" href="./manifest.webmanifest?v=12" />
+  <link rel="icon" href="./icon.svg?v=12" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon-180.png?v=12" />
+  <link rel="stylesheet" href="./styles.css?v=12" />
+  <link rel="stylesheet" href="./difficulty.css?v=12" />
+  <link rel="stylesheet" href="./version.css?v=12" />
+  <link rel="stylesheet" href="./multiplayer.css?v=12" />
 </head>
 <body>
   <div class="app-glow app-glow-a"></div>
@@ -26,13 +27,37 @@
         <h1>על הראש</h1>
       </div>
       <div class="topbar-actions">
-        <button id="versionBtn" class="version-btn" type="button" aria-label="בדוק אם קיימת גרסה חדשה">גרסה 1.1.0</button>
+        <button id="versionBtn" class="version-btn" type="button" aria-label="בדוק אם קיימת גרסה חדשה">גרסה 1.2.0</button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="חוקים">?</button>
       </div>
     </header>
 
     <main>
-      <section id="homeScreen" class="screen active">
+      <section id="playerSetupScreen" class="screen player-setup-screen active">
+        <div class="player-setup-card">
+          <div class="big-icon">👥</div>
+          <h2>כמה שחקנים?</h2>
+          <p>כל שחקן מקבל תור משלו. בסוף הסבב תופיע טבלת ניקוד מצטברת.</p>
+          <label class="player-count-block">
+            מספר שחקנים
+            <select id="playerCount">
+              <option value="1">שחקן 1</option>
+              <option value="2">2 שחקנים</option>
+              <option value="3">3 שחקנים</option>
+              <option value="4">4 שחקנים</option>
+              <option value="5">5 שחקנים</option>
+              <option value="6">6 שחקנים</option>
+              <option value="7">7 שחקנים</option>
+              <option value="8">8 שחקנים</option>
+            </select>
+          </label>
+          <div class="player-setup-note">אפשר להשאיר שם ריק — המשחק ישתמש ב״שחקן 1״, ״שחקן 2״ וכו׳.</div>
+          <div id="playerNames" class="player-names"></div>
+          <button id="startPlayersBtn" class="primary-btn" type="button">המשך לבחירת משחק</button>
+        </div>
+      </section>
+
+      <section id="homeScreen" class="screen">
         <div class="hero">
           <div class="hero-copy">
             <div class="hero-badge">🎉 מוכן למסיבה הבאה</div>
@@ -51,6 +76,11 @@
               <div class="phone-mini">נכון / דילוג</div>
             </div>
           </div>
+        </div>
+
+        <div class="match-players-bar">
+          <div id="matchPlayersSummary" class="match-players-summary"></div>
+          <button id="changePlayersBtn" class="change-players-btn" type="button">שנה שחקנים</button>
         </div>
 
         <div class="settings-row">
@@ -101,6 +131,7 @@
       <section id="readyScreen" class="screen center-screen">
         <div class="ready-card">
           <div class="big-icon">📱</div>
+          <div id="readyPlayerName" class="ready-player-name"></div>
           <h2 id="readyDeckName"></h2>
           <p id="readyDeckMeta" class="ready-deck-meta"></p>
           <p>לחץ על הכפתור, אשר גישה לחיישני תנועה אם תתבקש, סובב את הטלפון לרוחב והנח אותו על המצח.</p>
@@ -125,6 +156,7 @@
           <span id="gameDeckName"></span>
           <span id="timerText" class="timer">01:00</span>
           <div class="game-left-tools">
+            <span id="gamePlayerName" class="game-player-name"></span>
             <span id="scoreText">0 נק׳</span>
             <button id="gameExitBtn" class="game-exit-btn" type="button">יציאה ✕</button>
           </div>
@@ -149,9 +181,14 @@
       <section id="resultsScreen" class="screen">
         <div class="results-header">
           <div class="big-icon">🏁</div>
-          <h2>נגמר הזמן</h2>
+          <div id="resultsPlayerName" class="results-player-name"></div>
+          <h2 id="resultsTitle">נגמר הזמן</h2>
           <div id="finalScore" class="final-score">0</div>
-          <div class="muted">נקודות</div>
+          <div class="muted">נקודות בתור הזה</div>
+        </div>
+        <div id="scoreboardPanel" class="scoreboard-panel" hidden>
+          <h3 id="scoreboardTitle" class="scoreboard-title">הדירוג המצטבר</h3>
+          <div id="scoreboardList" class="scoreboard-list"></div>
         </div>
         <div id="resultsList" class="results-list"></div>
         <div class="results-actions">
@@ -166,22 +203,23 @@
     <button id="closeRulesBtn" class="dialog-close" type="button" aria-label="סגור">×</button>
     <h2>איך משחקים?</h2>
     <ol>
+      <li>בחר כמה שחקנים משחקים והוסף שמות אם תרצה.</li>
       <li>בחר חבילת מילים ורמת קושי: רגיל או מאתגר.</li>
+      <li>כל שחקן מקבל תור. בסוף התור מעבירים את הטלפון לשחקן הבא.</li>
       <li>השחקן המנחש מחזיק את הטלפון לרוחב על המצח, בלי לראות את המסך.</li>
       <li>החברים נותנים רמזים בלי לומר את המילה שמופיעה.</li>
-      <li>ניחשת נכון? הטה את החלק העליון של הטלפון כלפי מטה.</li>
-      <li>רוצה לדלג? הטה לכיוון ההפוך.</li>
-      <li>המטרה: לצבור כמה שיותר תשובות נכונות לפני שהזמן נגמר.</li>
+      <li>ניחשת נכון? הטה את החלק העליון של הטלפון כלפי מטה. לדילוג — לכיוון ההפוך.</li>
+      <li>בסוף הסבב מוצג דירוג מצטבר. אפשר להמשיך לסבב נוסף והניקוד נשמר.</li>
     </ol>
     <p class="muted">במצב מאתגר נבחר מאגר נפרד של מושגים, שמות וביטויים פחות צפויים וקשים יותר לניחוש.</p>
   </dialog>
 
-  <script src="./words.js?v=11"></script>
-  <script src="./words-more.js?v=11"></script>
-  <script src="./hard-words.js?v=11"></script>
-  <script src="./rosh-hashanah.js?v=11"></script>
-  <script src="./app.js?v=11"></script>
-  <script src="./sounds.js?v=11"></script>
-  <script src="./update-manager.js?v=11"></script>
+  <script src="./words.js?v=12"></script>
+  <script src="./words-more.js?v=12"></script>
+  <script src="./hard-words.js?v=12"></script>
+  <script src="./rosh-hashanah.js?v=12"></script>
+  <script src="./app.js?v=12"></script>
+  <script src="./sounds.js?v=12"></script>
+  <script src="./update-manager.js?v=12"></script>
 </body>
 </html>
