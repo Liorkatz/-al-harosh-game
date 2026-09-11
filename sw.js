@@ -1,4 +1,4 @@
-const CACHE = 'al-harosh-v15';
+const CACHE = 'al-harosh-v16';
 const ASSETS = ['./','./index.html','./styles.css','./difficulty.css','./version.css','./multiplayer.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./hard-words.js','./rosh-hashanah.js','./app.js','./sounds.js','./update-manager.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 
 self.addEventListener('install', event => {
