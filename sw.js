@@ -1,4 +1,4 @@
-const CACHE = 'al-harosh-v17';
+const CACHE = 'al-harosh-v18';
 const ASSETS = ['./','./index.html','./styles.css','./difficulty.css','./version.css','./multiplayer.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./hard-words.js','./rosh-hashanah.js','./app.js','./sounds.js','./update-manager.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 
 self.addEventListener('install', event => {
@@ -31,7 +31,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (url.pathname.endsWith('/sounds.js') || url.pathname.endsWith('/update-manager.js')) {
+  if (url.pathname.endsWith('/sounds.js') || url.pathname.endsWith('/update-manager.js') || url.pathname.endsWith('/index.html')) {
     event.respondWith(fetch(new Request(event.request, { cache: 'reload' })).then(response => {
       const copy = response.clone();
       caches.open(CACHE).then(cache => cache.put(event.request, copy));
