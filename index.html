@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="he" dir="rtl" data-app-version="1.2.8">
+<html lang="he" dir="rtl" data-app-version="1.2.9">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
@@ -8,13 +8,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="על הראש" />
   <title>על הראש — משחק ניחושים בעברית</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=18" />
-  <link rel="icon" href="./icon.svg?v=18" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./icon-180.png?v=18" />
-  <link rel="stylesheet" href="./styles.css?v=18" />
-  <link rel="stylesheet" href="./difficulty.css?v=18" />
-  <link rel="stylesheet" href="./version.css?v=18" />
-  <link rel="stylesheet" href="./multiplayer.css?v=18" />
+  <link rel="manifest" href="./manifest.webmanifest?v=19" />
+  <link rel="icon" href="./icon.svg?v=19" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon-180.png?v=19" />
+  <link rel="stylesheet" href="./styles.css?v=19" />
+  <link rel="stylesheet" href="./difficulty.css?v=19" />
+  <link rel="stylesheet" href="./version.css?v=19" />
+  <link rel="stylesheet" href="./multiplayer.css?v=19" />
 </head>
 <body>
   <div class="app-glow app-glow-a"></div>
@@ -27,7 +27,7 @@
         <h1>על הראש</h1>
       </div>
       <div class="topbar-actions">
-        <button id="versionBtn" class="version-btn" type="button" aria-label="בדוק אם קיימת גרסה חדשה">גרסה 1.2.8</button>
+        <button id="versionBtn" class="version-btn" type="button" aria-label="בדוק אם קיימת גרסה חדשה">גרסה 1.2.9</button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="חוקים">?</button>
       </div>
     </header>
@@ -58,26 +58,6 @@
       </section>
 
       <section id="homeScreen" class="screen">
-        <div class="hero">
-          <div class="hero-copy">
-            <div class="hero-badge">🎉 מוכן למסיבה הבאה</div>
-            <h2>בחר חבילה, שים את הטלפון על המצח — ותתחילו לצחוק</h2>
-            <p>מטה = נכון, מעלה = דילוג. עובד עם חיישני תנועה וגם עם כפתורי גיבוי.</p>
-            <div class="hero-stats">
-              <div class="stat-pill"><strong id="totalDecks">13</strong><span>חבילות</span></div>
-              <div class="stat-pill"><strong id="totalWords">0</strong><span>מילים</span></div>
-              <div class="stat-pill"><strong>עברית</strong><span>מותאם לנייד</span></div>
-            </div>
-          </div>
-          <div class="hero-visual" aria-hidden="true">
-            <div class="phone-mock">
-              <div class="phone-notch"></div>
-              <div class="phone-word">🤳</div>
-              <div class="phone-mini">נכון / דילוג</div>
-            </div>
-          </div>
-        </div>
-
         <div class="match-players-bar">
           <div id="matchPlayersSummary" class="match-players-summary"></div>
           <button id="changePlayersBtn" class="change-players-btn" type="button">שנה שחקנים</button>
@@ -126,6 +106,26 @@
             <span id="customCount" class="muted"></span>
           </div>
         </section>
+
+        <div class="hero">
+          <div class="hero-copy">
+            <div class="hero-badge">🎉 מוכן למסיבה הבאה</div>
+            <h2>בחר חבילה, שים את הטלפון על המצח — ותתחילו לצחוק</h2>
+            <p>מטה = נכון, מעלה = דילוג. עובד עם חיישני תנועה וגם עם כפתורי גיבוי.</p>
+            <div class="hero-stats">
+              <div class="stat-pill"><strong id="totalDecks">13</strong><span>חבילות</span></div>
+              <div class="stat-pill"><strong id="totalWords">0</strong><span>מילים</span></div>
+              <div class="stat-pill"><strong>עברית</strong><span>מותאם לנייד</span></div>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="phone-mock">
+              <div class="phone-notch"></div>
+              <div class="phone-word">🤳</div>
+              <div class="phone-mini">נכון / דילוג</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="readyScreen" class="screen center-screen">
@@ -214,12 +214,12 @@
     <p class="muted">במצב מאתגר נבחר מאגר נפרד של מושגים, שמות וביטויים פחות צפויים וקשים יותר לניחוש.</p>
   </dialog>
 
-  <script src="./words.js?v=18"></script>
-  <script src="./words-more.js?v=18"></script>
-  <script src="./hard-words.js?v=18"></script>
-  <script src="./rosh-hashanah.js?v=18"></script>
-  <script src="./app.js?v=18"></script>
-  <script src="./sounds.js?v=18"></script>
-  <script src="./update-manager.js?v=18"></script>
+  <script src="./words.js?v=19"></script>
+  <script src="./words-more.js?v=19"></script>
+  <script src="./hard-words.js?v=19"></script>
+  <script src="./rosh-hashanah.js?v=19"></script>
+  <script src="./app.js?v=19"></script>
+  <script src="./sounds.js?v=19"></script>
+  <script src="./update-manager.js?v=19"></script>
 </body>
 </html>
