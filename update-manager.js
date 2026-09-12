@@ -7,6 +7,7 @@
 
   const defaultLabel = `גרסה ${CURRENT_VERSION}`;
   versionBtn.textContent = defaultLabel;
+  let latestAvailable = null;
 
   const indicatorStyle = document.createElement('style');
   indicatorStyle.textContent = `
@@ -24,6 +25,50 @@
       box-shadow: 0 0 0 2px rgba(239,68,68,.18), 0 0 12px rgba(239,68,68,.7);
       pointer-events: none;
     }
+    .update-dialog {
+      width: min(420px, calc(100vw - 32px));
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 22px;
+      padding: 0;
+      color: #f8fafc;
+      background: linear-gradient(155deg, #13233d, #08111f 70%);
+      box-shadow: 0 28px 90px rgba(0,0,0,.55);
+    }
+    .update-dialog::backdrop { background: rgba(2,6,23,.72); backdrop-filter: blur(5px); }
+    .update-dialog-card { padding: 22px; text-align: right; direction: rtl; }
+    .update-dialog-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.28);
+      color: #fecaca;
+      font-size: .82rem;
+      font-weight: 900;
+    }
+    .update-dialog h3 { margin: 14px 0 5px; font-size: 1.45rem; }
+    .update-dialog-current { margin: 0 0 16px; color: #94a3b8; font-size: .88rem; }
+    .update-dialog-notes {
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+    .update-dialog-notes strong { display: block; margin-bottom: 5px; color: #fde68a; }
+    .update-dialog-actions { display: grid; grid-template-columns: 1fr auto; gap: 9px; margin-top: 18px; }
+    .update-now-btn, .update-later-btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      font-weight: 900;
+      font: inherit;
+    }
+    .update-now-btn { background: #facc15; color: #111827; }
+    .update-later-btn { padding: 0 15px; background: rgba(255,255,255,.08); color: #e2e8f0; }
   `;
   document.head.appendChild(indicatorStyle);
 
@@ -76,34 +121,74 @@
   async function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
+    setUpdateIndicator(false);
 
     try {
       await clearAppCaches();
 
       if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
-          try { await registration.update(); } catch (_) {}
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-        }
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(async registration => {
+          try {
+            if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            await registration.unregister();
+          } catch (_) {}
+        }));
       }
 
-      const nextUrl = new URL('./', window.location.href);
+      const nextUrl = new URL('./index.html', window.location.href);
       nextUrl.searchParams.set('updated', latestVersion);
       nextUrl.searchParams.set('t', Date.now().toString());
       window.location.replace(nextUrl.toString());
     } catch (error) {
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
+      setUpdateIndicator(true);
       alert('לא הצלחתי להשלים את העדכון. נסה שוב בעוד רגע.');
     }
+  }
+
+  function showUpdateDialog(latest) {
+    latestAvailable = latest;
+    let dialog = document.getElementById('updateDialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.id = 'updateDialog';
+      dialog.className = 'update-dialog';
+      dialog.innerHTML = `
+        <div class="update-dialog-card">
+          <div class="update-dialog-badge">● עדכון זמין</div>
+          <h3 id="updateDialogTitle"></h3>
+          <p id="updateDialogCurrent" class="update-dialog-current"></p>
+          <div class="update-dialog-notes"><strong>מה חדש</strong><span id="updateDialogNotes"></span></div>
+          <div class="update-dialog-actions">
+            <button id="updateNowBtn" class="update-now-btn" type="button">עדכן עכשיו</button>
+            <button id="updateLaterBtn" class="update-later-btn" type="button">אחר כך</button>
+          </div>
+        </div>`;
+      document.body.appendChild(dialog);
+
+      dialog.querySelector('#updateLaterBtn').addEventListener('click', () => dialog.close());
+      dialog.querySelector('#updateNowBtn').addEventListener('click', async () => {
+        if (!latestAvailable) return;
+        dialog.close();
+        await applyUpdate(latestAvailable.version);
+      });
+      dialog.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+      });
+    }
+
+    dialog.querySelector('#updateDialogTitle').textContent = `גרסה חדשה ${latest.version}`;
+    dialog.querySelector('#updateDialogCurrent').textContent = `הגרסה אצלך: ${CURRENT_VERSION}`;
+    dialog.querySelector('#updateDialogNotes').textContent = latest.notes || 'שיפורים ועדכונים כלליים.';
+    if (!dialog.open) dialog.showModal();
   }
 
   async function silentCheckForUpdate() {
     try {
       const latest = await fetchLatestVersion();
+      latestAvailable = latest;
       setUpdateIndicator(isNewerVersion(latest.version, CURRENT_VERSION));
     } catch (_) {
       // Silent by design: entering the game must never be interrupted by a network error.
@@ -117,16 +202,13 @@
 
     try {
       const latest = await fetchLatestVersion();
+      latestAvailable = latest;
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
 
       if (isNewerVersion(latest.version, CURRENT_VERSION)) {
         setUpdateIndicator(true);
-        const notes = latest.notes ? `\n\n${latest.notes}` : '';
-        const shouldUpdate = window.confirm(
-          `יש גרסה חדשה: ${latest.version}\nהגרסה אצלך: ${CURRENT_VERSION}${notes}\n\nלעדכן עכשיו?`
-        );
-        if (shouldUpdate) await applyUpdate(latest.version);
+        showUpdateDialog(latest);
         return;
       }
 
