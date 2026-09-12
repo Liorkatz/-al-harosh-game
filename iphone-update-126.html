@@ -21,30 +21,22 @@
   <main>
     <div class="spinner" aria-hidden="true"></div>
     <h1>מעדכן לגרסה החדשה…</h1>
-    <p id="statusText">מנקה את הגרסה הישנה ומכין עותק חדש.</p>
+    <p id="statusText">מאמת את הגרסה החדשה ומנקה את הגרסה הישנה.</p>
   </main>
   <script>
     (async () => {
       const params = new URLSearchParams(location.search);
-      const version = params.get('version') || '1.2.6';
+      const version = params.get('version') || '1.2.7';
       const stamp = Date.now().toString();
       const status = document.getElementById('statusText');
-      const target = new URL('./index.html', location.href);
+      const target = new URL('./app-current.html', location.href);
+      target.searchParams.set('v', version);
       target.searchParams.set('fresh', stamp);
-      target.searchParams.set('version', version);
 
       try {
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.filter(key => key.startsWith('al-harosh-')).map(key => caches.delete(key)));
-        }
-
-        status.textContent = 'מוריד עותק חדש מהשרת…';
-
-        // The current iPhone page can still be controlled by an old Service Worker.
-        // A never-before-used query URL forces that worker to miss its old cache and fetch the new HTML.
+        status.textContent = 'בודק שהגרסה החדשה באמת זמינה…';
         const response = await fetch(target.toString(), {
-          cache: 'reload',
+          cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -53,18 +45,27 @@
           throw new Error(`Server page is not version ${version}`);
         }
 
-        status.textContent = 'מסיר את מנגנון המטמון הישן…';
+        status.textContent = 'מנקה את המטמון הישן…';
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.filter(key => key.startsWith('al-harosh-')).map(key => caches.delete(key)));
+        }
+
         if ('serviceWorker' in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
           await Promise.all(registrations.map(registration => registration.unregister().catch(() => false)));
         }
 
-        status.textContent = 'פותח את הגרסה החדשה…';
+        // Mark installed only after the target page was verified as the requested version.
+        localStorage.setItem('alHaroshInstalledVersion', version);
+        localStorage.setItem('alHaroshInstalledAt', new Date().toISOString());
+
+        status.textContent = 'העדכון הושלם. פותח את המשחק…';
         location.replace(target.toString());
       } catch (error) {
         status.className = 'error';
-        status.textContent = `העדכון נעצר כדי לא לטעון שוב גרסה ישנה. נסה שוב בעוד רגע. (${error.message})`;
-        console.error('iPhone update recovery failed', error);
+        status.textContent = `העדכון לא סומן כהושלם כי הגרסה החדשה לא אומתה. (${error.message})`;
+        console.error('iPhone update verification failed', error);
       }
     })();
   </script>
