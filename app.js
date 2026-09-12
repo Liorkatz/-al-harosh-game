@@ -22,6 +22,7 @@
   };
 
   const deckGlows = ['rgba(96,165,250,.38)','rgba(255,204,77,.34)','rgba(52,211,153,.30)','rgba(244,114,182,.28)','rgba(192,132,252,.26)','rgba(251,146,60,.26)'];
+  const wordQueuesStorageKey = 'alHaroshWordQueuesV1';
 
   const state = {
     selectedDeck: null,
@@ -58,6 +59,88 @@
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  function uniqueWords(items) {
+    return [...new Set((items || []).map(w => String(w).trim()).filter(Boolean))];
+  }
+
+  function wordQueueKey() {
+    if (!state.selectedDeck) return '';
+    return `${state.difficulty}:${state.selectedDeck.id}`;
+  }
+
+  function wordsSignature(words) {
+    const text = [...words].sort().join('\u001f');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${words.length}:${(hash >>> 0).toString(36)}`;
+  }
+
+  function readWordQueues() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(wordQueuesStorageKey) || '{}');
+      return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writeWordQueues(queues) {
+    try { localStorage.setItem(wordQueuesStorageKey, JSON.stringify(queues)); } catch (_) {}
+  }
+
+  function freshWordQueue(words, previousWord = '') {
+    const queue = shuffle(words);
+    if (queue.length > 1 && previousWord && queue[0] === previousWord) {
+      const swapIndex = 1 + Math.floor(Math.random() * (queue.length - 1));
+      [queue[0], queue[swapIndex]] = [queue[swapIndex], queue[0]];
+    }
+    return queue;
+  }
+
+  function loadCurrentWordQueue() {
+    const words = uniqueWords(state.selectedDeck && state.selectedDeck.words);
+    const key = wordQueueKey();
+    if (!key || !words.length) return [];
+
+    const queues = readWordQueues();
+    const signature = wordsSignature(words);
+    const saved = queues[key];
+    const validSavedQueue = saved
+      && saved.signature === signature
+      && Array.isArray(saved.remaining)
+      && saved.remaining.every(word => words.includes(word))
+      && new Set(saved.remaining).size === saved.remaining.length;
+
+    if (validSavedQueue) return [...saved.remaining];
+
+    const remaining = freshWordQueue(words);
+    queues[key] = { signature, remaining };
+    writeWordQueues(queues);
+    return [...remaining];
+  }
+
+  function saveCurrentWordQueue() {
+    const words = uniqueWords(state.selectedDeck && state.selectedDeck.words);
+    const key = wordQueueKey();
+    if (!key || !words.length) return;
+
+    const queues = readWordQueues();
+    queues[key] = {
+      signature: wordsSignature(words),
+      remaining: [...state.roundWords]
+    };
+    writeWordQueues(queues);
+  }
+
+  function refillCurrentWordQueue() {
+    const words = uniqueWords(state.selectedDeck && state.selectedDeck.words);
+    state.roundWords = freshWordQueue(words, state.currentWord);
+    saveCurrentWordQueue();
   }
 
   function formatTime(total) {
@@ -283,8 +366,7 @@
   }
 
   function setupRound() {
-    const unique = [...new Set(state.selectedDeck.words.map(w => String(w).trim()).filter(Boolean))];
-    state.roundWords = shuffle(unique);
+    state.roundWords = loadCurrentWordQueue();
     state.history = [];
     state.score = 0;
     state.remaining = state.duration;
@@ -342,10 +424,9 @@
   }
 
   function nextWord() {
-    if (!state.roundWords.length) {
-      state.roundWords = shuffle([...new Set(state.selectedDeck.words)]);
-    }
+    if (!state.roundWords.length) refillCurrentWordQueue();
     state.currentWord = state.roundWords.shift() || 'אין מילים';
+    saveCurrentWordQueue();
     els.wordText.textContent = state.currentWord;
   }
 
