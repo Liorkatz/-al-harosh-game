@@ -1,4 +1,4 @@
-const CACHE = 'al-harosh-v18';
+const CACHE = 'al-harosh-v19';
 const ASSETS = ['./','./index.html','./styles.css','./difficulty.css','./version.css','./multiplayer.css','./words.js','./words-more.js','./words-more-a.js','./words-more-b.js','./hard-words.js','./rosh-hashanah.js','./app.js','./sounds.js','./update-manager.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./icon-180.png'];
 
 self.addEventListener('install', event => {
@@ -20,6 +20,19 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(new Request(event.request, { cache: 'no-store' }))
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put('./index.html', copy)).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
 
   if (url.pathname.endsWith('/version.json')) {
     event.respondWith(
