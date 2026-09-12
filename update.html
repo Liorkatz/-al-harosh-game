@@ -13,6 +13,7 @@
     .spinner { width: 46px; height: 46px; margin: 0 auto 18px; border: 4px solid rgba(255,255,255,.16); border-top-color: #facc15; border-radius: 50%; animation: spin .75s linear infinite; }
     h1 { margin: 0 0 8px; font-size: 1.45rem; }
     p { margin: 0; color: #cbd5e1; line-height: 1.55; }
+    .error { color: #fecaca; margin-top: 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -20,13 +21,14 @@
   <main>
     <div class="spinner" aria-hidden="true"></div>
     <h1>מעדכן לגרסה החדשה…</h1>
-    <p>מנקה את הגרסה הישנה וטוען את המשחק מחדש.</p>
+    <p id="statusText">מנקה את הגרסה הישנה וטוען עותק חדש ישירות מהשרת.</p>
   </main>
   <script>
     (async () => {
       const params = new URLSearchParams(location.search);
       const version = params.get('version') || '';
       const stamp = Date.now().toString();
+      const status = document.getElementById('statusText');
 
       try {
         if ('caches' in window) {
@@ -38,14 +40,32 @@
           const registrations = await navigator.serviceWorker.getRegistrations();
           await Promise.all(registrations.map(registration => registration.unregister().catch(() => false)));
         }
-      } catch (_) {
-        // Continue to a cache-busted network navigation even if cleanup is partially unsupported.
-      }
 
-      const next = new URL('./index.html', location.href);
-      if (version) next.searchParams.set('updated', version);
-      next.searchParams.set('fresh', stamp);
-      location.replace(next.toString());
+        status.textContent = 'מוריד את הגרסה החדשה…';
+
+        // iOS keeps an already-open PWA controlled by the old Service Worker until that
+        // document is gone. Fetch the fresh HTML from a different origin so the stale
+        // same-origin cache cannot supply index.html again.
+        const rawUrl = `https://raw.githubusercontent.com/Liorkatz/-al-harosh-game/main/index.html?fresh=${stamp}`;
+        const response = await fetch(rawUrl, { cache: 'no-store', mode: 'cors' });
+        if (!response.ok) throw new Error(`Fresh HTML HTTP ${response.status}`);
+        const html = await response.text();
+        if (!html.includes('data-app-version=')) throw new Error('Fresh HTML is invalid');
+
+        const next = new URL('./index.html', location.href);
+        if (version) next.searchParams.set('updated', version);
+        next.searchParams.set('fresh', stamp);
+
+        // Change the visible/current URL without navigating through the stale controller.
+        history.replaceState(null, '', next.toString());
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (error) {
+        status.className = 'error';
+        status.textContent = 'העדכון לא הושלם. סגור את המשחק לגמרי ופתח שוב, ואז נסה פעם נוספת.';
+        console.error('Update bridge failed', error);
+      }
     })();
   </script>
 </body>
