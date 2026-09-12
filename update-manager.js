@@ -8,6 +8,30 @@
   const defaultLabel = `גרסה ${CURRENT_VERSION}`;
   versionBtn.textContent = defaultLabel;
 
+  const indicatorStyle = document.createElement('style');
+  indicatorStyle.textContent = `
+    .version-btn { position: relative; }
+    .version-btn.update-available::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 2px solid #08111f;
+      box-shadow: 0 0 0 2px rgba(239,68,68,.18), 0 0 12px rgba(239,68,68,.7);
+      pointer-events: none;
+    }
+  `;
+  document.head.appendChild(indicatorStyle);
+
+  function setUpdateIndicator(show) {
+    versionBtn.classList.toggle('update-available', Boolean(show));
+    versionBtn.setAttribute('aria-label', show ? 'קיימת גרסה חדשה — לחץ לעדכון' : 'בדוק אם קיימת גרסה חדשה');
+  }
+
   function versionParts(value) {
     return String(value || '0')
       .replace(/^v/i, '')
@@ -77,6 +101,15 @@
     }
   }
 
+  async function silentCheckForUpdate() {
+    try {
+      const latest = await fetchLatestVersion();
+      setUpdateIndicator(isNewerVersion(latest.version, CURRENT_VERSION));
+    } catch (_) {
+      // Silent by design: entering the game must never be interrupted by a network error.
+    }
+  }
+
   async function checkForUpdate() {
     if (versionBtn.disabled) return;
     versionBtn.disabled = true;
@@ -88,6 +121,7 @@
       versionBtn.textContent = defaultLabel;
 
       if (isNewerVersion(latest.version, CURRENT_VERSION)) {
+        setUpdateIndicator(true);
         const notes = latest.notes ? `\n\n${latest.notes}` : '';
         const shouldUpdate = window.confirm(
           `יש גרסה חדשה: ${latest.version}\nהגרסה אצלך: ${CURRENT_VERSION}${notes}\n\nלעדכן עכשיו?`
@@ -96,6 +130,7 @@
         return;
       }
 
+      setUpdateIndicator(false);
       alert(`יש לך את הגרסה העדכנית (${CURRENT_VERSION}).`);
     } catch (error) {
       versionBtn.disabled = false;
@@ -105,4 +140,9 @@
   }
 
   versionBtn.addEventListener('click', checkForUpdate);
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', silentCheckForUpdate, { once: true });
+  } else {
+    silentCheckForUpdate();
+  }
 })();
