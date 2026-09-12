@@ -1,12 +1,39 @@
 (() => {
   'use strict';
 
-  const CURRENT_VERSION = document.documentElement.dataset.appVersion || '1.1.0';
+  const HTML_VERSION = document.documentElement.dataset.appVersion || '1.1.0';
   const versionBtn = document.getElementById('versionBtn');
   if (!versionBtn) return;
 
   const INSTALLED_VERSION_KEY = 'alHaroshInstalledVersion';
   const CURRENT_ENTRY = './app-current.html';
+
+  function versionParts(value) {
+    return String(value || '0')
+      .replace(/^v/i, '')
+      .split('.')
+      .map(part => Number.parseInt(part, 10) || 0);
+  }
+
+  function isNewerVersion(latest, current) {
+    const a = versionParts(latest);
+    const b = versionParts(current);
+    const length = Math.max(a.length, b.length);
+    for (let i = 0; i < length; i += 1) {
+      const left = a[i] || 0;
+      const right = b[i] || 0;
+      if (left > right) return true;
+      if (left < right) return false;
+    }
+    return false;
+  }
+
+  let installedVersion = '';
+  try { installedVersion = localStorage.getItem(INSTALLED_VERSION_KEY) || ''; } catch (_) {}
+  const CURRENT_VERSION = installedVersion && isNewerVersion(installedVersion, HTML_VERSION)
+    ? installedVersion
+    : HTML_VERSION;
+
   const defaultLabel = `גרסה ${CURRENT_VERSION}`;
   versionBtn.textContent = defaultLabel;
   let latestAvailable = null;
@@ -79,26 +106,6 @@
     versionBtn.setAttribute('aria-label', show ? 'קיימת גרסה חדשה — לחץ לעדכון' : 'בדוק אם קיימת גרסה חדשה');
   }
 
-  function versionParts(value) {
-    return String(value || '0')
-      .replace(/^v/i, '')
-      .split('.')
-      .map(part => Number.parseInt(part, 10) || 0);
-  }
-
-  function isNewerVersion(latest, current) {
-    const a = versionParts(latest);
-    const b = versionParts(current);
-    const length = Math.max(a.length, b.length);
-    for (let i = 0; i < length; i += 1) {
-      const left = a[i] || 0;
-      const right = b[i] || 0;
-      if (left > right) return true;
-      if (left < right) return false;
-    }
-    return false;
-  }
-
   function buildCurrentEntry(version) {
     const target = new URL(CURRENT_ENTRY, window.location.href);
     target.searchParams.set('v', version);
@@ -108,10 +115,9 @@
 
   function redirectToInstalledEntryIfNeeded() {
     try {
-      const installed = localStorage.getItem(INSTALLED_VERSION_KEY) || '';
       const alreadyOnCurrentEntry = /\/app-current\.html$/.test(window.location.pathname);
-      if (!alreadyOnCurrentEntry && installed && isNewerVersion(installed, CURRENT_VERSION)) {
-        window.location.replace(buildCurrentEntry(installed).toString());
+      if (!alreadyOnCurrentEntry && installedVersion && isNewerVersion(installedVersion, HTML_VERSION)) {
+        window.location.replace(buildCurrentEntry(installedVersion).toString());
         return true;
       }
     } catch (_) {}
@@ -144,15 +150,16 @@
     } catch (_) {}
   }
 
-  async function applyUpdate(latestVersion) {
+  function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
     setUpdateIndicator(false);
 
     try {
-      localStorage.setItem(INSTALLED_VERSION_KEY, latestVersion);
-      await removeLegacyOfflineLayer();
-      window.location.replace(buildCurrentEntry(latestVersion).toString());
+      const bridgeUrl = new URL('./iphone-update-126.html', window.location.href);
+      bridgeUrl.searchParams.set('version', latestVersion);
+      bridgeUrl.searchParams.set('t', Date.now().toString());
+      window.location.assign(bridgeUrl.toString());
     } catch (error) {
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
