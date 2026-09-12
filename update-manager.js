@@ -30,6 +30,7 @@
 
   let installedVersion = '';
   try { installedVersion = localStorage.getItem(INSTALLED_VERSION_KEY) || ''; } catch (_) {}
+
   const CURRENT_VERSION = installedVersion && isNewerVersion(installedVersion, HTML_VERSION)
     ? installedVersion
     : HTML_VERSION;
@@ -113,19 +114,6 @@
     return target;
   }
 
-  function redirectToInstalledEntryIfNeeded() {
-    try {
-      const alreadyOnCurrentEntry = /\/app-current\.html$/.test(window.location.pathname);
-      if (!alreadyOnCurrentEntry && installedVersion && isNewerVersion(installedVersion, HTML_VERSION)) {
-        window.location.replace(buildCurrentEntry(installedVersion).toString());
-        return true;
-      }
-    } catch (_) {}
-    return false;
-  }
-
-  if (redirectToInstalledEntryIfNeeded()) return;
-
   async function fetchLatestVersion() {
     const response = await fetch(`./version.json?t=${Date.now()}`, {
       cache: 'no-store',
@@ -150,21 +138,35 @@
     } catch (_) {}
   }
 
-  function applyUpdate(latestVersion) {
+  async function verifyPublishedVersion(version) {
+    const target = buildCurrentEntry(version);
+    const response = await fetch(target.toString(), {
+      cache: 'reload',
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const html = await response.text();
+    if (!html.includes(`data-app-version="${version}"`)) {
+      throw new Error(`Published page is not version ${version}`);
+    }
+    return target;
+  }
+
+  async function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
     setUpdateIndicator(false);
 
     try {
-      const bridgeUrl = new URL('./iphone-update-126.html', window.location.href);
-      bridgeUrl.searchParams.set('version', latestVersion);
-      bridgeUrl.searchParams.set('t', Date.now().toString());
-      window.location.assign(bridgeUrl.toString());
+      const target = await verifyPublishedVersion(latestVersion);
+      await removeLegacyOfflineLayer();
+      try { localStorage.setItem(INSTALLED_VERSION_KEY, latestVersion); } catch (_) {}
+      window.location.replace(target.toString());
     } catch (error) {
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
       setUpdateIndicator(true);
-      alert('לא הצלחתי להתחיל את העדכון. נסה שוב בעוד רגע.');
+      alert('הגרסה החדשה עדיין לא זמינה במלואה. נסה שוב בעוד רגע.');
     }
   }
 
@@ -230,7 +232,6 @@
         return;
       }
 
-      try { localStorage.setItem(INSTALLED_VERSION_KEY, CURRENT_VERSION); } catch (_) {}
       setUpdateIndicator(false);
       alert(`יש לך את הגרסה העדכנית (${CURRENT_VERSION}).`);
     } catch (error) {
