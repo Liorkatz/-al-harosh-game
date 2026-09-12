@@ -1,6 +1,20 @@
 /* Compact player editor: no duplicate summary, compact responsive grid. */
-.match-players-summary,
-.match-players-summary *,
+
+/* Keep the home content tight under the title. */
+.topbar {
+  padding-bottom: 4px !important;
+}
+#homeScreen {
+  margin-top: 0 !important;
+}
+#homeScreen .match-players-bar {
+  margin: 0 0 4px !important;
+}
+
+/* Force the legacy player summary out of the layout completely. */
+#homeScreen .match-players-bar .match-players-summary,
+#homeScreen .match-players-bar .match-players-summary *,
+#homeScreen .match-players-bar:has(.match-players-summary .player-mini-chip:nth-child(2)) .match-players-summary,
 .player-mini-chip,
 #changePlayersBtn,
 #inlineNamesToggle {
