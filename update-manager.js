@@ -108,13 +108,26 @@
     return data;
   }
 
+  async function removeLegacyOfflineLayer() {
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(key => key.startsWith('al-harosh-')).map(key => caches.delete(key)));
+      }
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(registration => registration.unregister().catch(() => false)));
+      }
+    } catch (_) {}
+  }
+
   function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
     setUpdateIndicator(false);
 
     try {
-      const bridgeUrl = new URL('./update.html', window.location.href);
+      const bridgeUrl = new URL('./iphone-update-126.html', window.location.href);
       bridgeUrl.searchParams.set('version', latestVersion);
       bridgeUrl.searchParams.set('t', Date.now().toString());
       window.location.assign(bridgeUrl.toString());
@@ -168,9 +181,7 @@
       const latest = await fetchLatestVersion();
       latestAvailable = latest;
       setUpdateIndicator(isNewerVersion(latest.version, CURRENT_VERSION));
-    } catch (_) {
-      // Silent by design: entering the game must never be interrupted by a network error.
-    }
+    } catch (_) {}
   }
 
   async function checkForUpdate() {
@@ -200,6 +211,14 @@
   }
 
   versionBtn.addEventListener('click', checkForUpdate);
+
+  // app.js in older releases registers a Service Worker on the window load event.
+  // Remove it shortly afterwards so iPhone/PWA launches cannot remain pinned to old HTML.
+  window.addEventListener('load', () => {
+    setTimeout(removeLegacyOfflineLayer, 300);
+    setTimeout(removeLegacyOfflineLayer, 1800);
+  });
+
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', silentCheckForUpdate, { once: true });
   } else {
