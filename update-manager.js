@@ -5,6 +5,8 @@
   const versionBtn = document.getElementById('versionBtn');
   if (!versionBtn) return;
 
+  const INSTALLED_VERSION_KEY = 'alHaroshInstalledVersion';
+  const CURRENT_ENTRY = './app-current.html';
   const defaultLabel = `גרסה ${CURRENT_VERSION}`;
   versionBtn.textContent = defaultLabel;
   let latestAvailable = null;
@@ -97,6 +99,27 @@
     return false;
   }
 
+  function buildCurrentEntry(version) {
+    const target = new URL(CURRENT_ENTRY, window.location.href);
+    target.searchParams.set('v', version);
+    target.searchParams.set('fresh', Date.now().toString());
+    return target;
+  }
+
+  function redirectToInstalledEntryIfNeeded() {
+    try {
+      const installed = localStorage.getItem(INSTALLED_VERSION_KEY) || '';
+      const alreadyOnCurrentEntry = /\/app-current\.html$/.test(window.location.pathname);
+      if (!alreadyOnCurrentEntry && installed && isNewerVersion(installed, CURRENT_VERSION)) {
+        window.location.replace(buildCurrentEntry(installed).toString());
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  if (redirectToInstalledEntryIfNeeded()) return;
+
   async function fetchLatestVersion() {
     const response = await fetch(`./version.json?t=${Date.now()}`, {
       cache: 'no-store',
@@ -121,16 +144,15 @@
     } catch (_) {}
   }
 
-  function applyUpdate(latestVersion) {
+  async function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
     setUpdateIndicator(false);
 
     try {
-      const bridgeUrl = new URL('./iphone-update-126.html', window.location.href);
-      bridgeUrl.searchParams.set('version', latestVersion);
-      bridgeUrl.searchParams.set('t', Date.now().toString());
-      window.location.assign(bridgeUrl.toString());
+      localStorage.setItem(INSTALLED_VERSION_KEY, latestVersion);
+      await removeLegacyOfflineLayer();
+      window.location.replace(buildCurrentEntry(latestVersion).toString());
     } catch (error) {
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
@@ -201,6 +223,7 @@
         return;
       }
 
+      try { localStorage.setItem(INSTALLED_VERSION_KEY, CURRENT_VERSION); } catch (_) {}
       setUpdateIndicator(false);
       alert(`יש לך את הגרסה העדכנית (${CURRENT_VERSION}).`);
     } catch (error) {
@@ -212,8 +235,6 @@
 
   versionBtn.addEventListener('click', checkForUpdate);
 
-  // app.js in older releases registers a Service Worker on the window load event.
-  // Remove it shortly afterwards so iPhone/PWA launches cannot remain pinned to old HTML.
   window.addEventListener('load', () => {
     setTimeout(removeLegacyOfflineLayer, 300);
     setTimeout(removeLegacyOfflineLayer, 1800);
