@@ -108,43 +108,21 @@
     return data;
   }
 
-  async function clearAppCaches() {
-    if (!('caches' in window)) return;
-    const keys = await caches.keys();
-    await Promise.all(
-      keys
-        .filter(key => key.startsWith('al-harosh-'))
-        .map(key => caches.delete(key))
-    );
-  }
-
-  async function applyUpdate(latestVersion) {
+  function applyUpdate(latestVersion) {
     versionBtn.disabled = true;
     versionBtn.textContent = 'מעדכן…';
     setUpdateIndicator(false);
 
     try {
-      await clearAppCaches();
-
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(async registration => {
-          try {
-            if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            await registration.unregister();
-          } catch (_) {}
-        }));
-      }
-
-      const nextUrl = new URL('./index.html', window.location.href);
-      nextUrl.searchParams.set('updated', latestVersion);
-      nextUrl.searchParams.set('t', Date.now().toString());
-      window.location.replace(nextUrl.toString());
+      const bridgeUrl = new URL('./update.html', window.location.href);
+      bridgeUrl.searchParams.set('version', latestVersion);
+      bridgeUrl.searchParams.set('t', Date.now().toString());
+      window.location.assign(bridgeUrl.toString());
     } catch (error) {
       versionBtn.disabled = false;
       versionBtn.textContent = defaultLabel;
       setUpdateIndicator(true);
-      alert('לא הצלחתי להשלים את העדכון. נסה שוב בעוד רגע.');
+      alert('לא הצלחתי להתחיל את העדכון. נסה שוב בעוד רגע.');
     }
   }
 
@@ -169,10 +147,10 @@
       document.body.appendChild(dialog);
 
       dialog.querySelector('#updateLaterBtn').addEventListener('click', () => dialog.close());
-      dialog.querySelector('#updateNowBtn').addEventListener('click', async () => {
+      dialog.querySelector('#updateNowBtn').addEventListener('click', () => {
         if (!latestAvailable) return;
         dialog.close();
-        await applyUpdate(latestAvailable.version);
+        applyUpdate(latestAvailable.version);
       });
       dialog.addEventListener('click', event => {
         if (event.target === dialog) dialog.close();
