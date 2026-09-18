@@ -1,20 +1,21 @@
-name: Create external short link
+name: Verify external short link
 on:
   push:
     paths:
       - ".github/workflows/shorten-tenme.yml"
 jobs:
-  shorten:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Create TinyURL
+      - name: Verify redirect
         shell: bash
         run: |
-          TARGET='https://liorkatz.github.io/-al-harosh-game/tenme/'
-          HTML="$(curl -fsSL --get 'https://tinyurl.com/create.php'             --data-urlencode "url=$TARGET"             --data-urlencode 'alias=TenMe-Gift200'             --data-urlencode 'source=indexpage'             --data-urlencode 'submit=Make TinyURL!')"
-          SHORT="$(printf '%s' "$HTML" | grep -oE 'https://tinyurl\.com/[A-Za-z0-9-]+' | grep -v '/preview/' | head -n1 || true)"
-          if [[ -z "$SHORT" ]]; then
-            SHORT="$(curl -fsSL --get 'https://tinyurl.com/api-create.php' --data-urlencode "url=$TARGET")"
-          fi
+          SHORT='https://cleanuri.com/31zwJl'
+          FINAL="$(curl -Ls -o /dev/null -w '%{url_effective}' "$SHORT")"
+          CODE="$(curl -Ls -o /dev/null -w '%{http_code}' "$SHORT")"
           echo "SHORT_URL=$SHORT"
-          echo "::notice title=TENME_TINYURL::$SHORT"
+          echo "FINAL_URL=$FINAL"
+          echo "HTTP_CODE=$CODE"
+          if [[ "$FINAL" != 'https://liorkatz.github.io/-al-harosh-game/tenme/' ]]; then
+            exit 1
+          fi
