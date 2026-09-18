@@ -11,14 +11,11 @@ jobs:
         shell: bash
         run: |
           TARGET='https://liorkatz.github.io/-al-harosh-game/tenme/'
-          for SLUG in TenMe200 TenMeGift200 AlonGift200; do
-            RES="$(curl -fsS --get 'https://is.gd/create.php'               --data-urlencode 'format=simple'               --data-urlencode "url=$TARGET"               --data-urlencode "shorturl=$SLUG" || true)"
-            if [[ "$RES" == https://is.gd/* ]]; then
-              echo "SHORT_URL=$RES"
-              echo "::notice title=TENME_SHORT_URL::$RES"
-              exit 0
-            fi
-          done
-          RES="$(curl -fsS --get 'https://is.gd/create.php'             --data-urlencode 'format=simple'             --data-urlencode "url=$TARGET")"
-          echo "SHORT_URL=$RES"
-          echo "::notice title=TENME_SHORT_URL::$RES"
+          RES="$(curl -fsS -X POST -d "url=$TARGET" 'https://cleanuri.com/api/v1/shorten')"
+          SHORT="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("result_url",""))' <<< "$RES")"
+          if [[ "$SHORT" != https://cleanuri.com/* ]]; then
+            echo "$RES"
+            exit 1
+          fi
+          echo "SHORT_URL=$SHORT"
+          echo "::notice title=TENME_SHORT_URL::$SHORT"
