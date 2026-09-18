@@ -18,7 +18,7 @@ body{min-height:100dvh;overflow:hidden;background:var(--y)}
 .logoMain{font-size:36px;font-weight:1000;letter-spacing:-2px}.logoSub{font-size:14px;font-weight:800;margin-top:2px}
 .card,.ticket{background:#fff;border:3px solid #111;border-radius:27px;box-shadow:9px 9px 0 #111;padding:27px 21px;text-align:center}
 .eyebrow{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px;font-weight:900;margin-bottom:15px}
-h1{font-size:35px;line-height:1.08;margin:0 0 11px;letter-spacing:-1.2px}.lead{font-size:17px;line-height:1.5;color:#555;margin:0 0 20px}
+h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{font-size:17px;line-height:1.5;color:#555;margin:0 0 20px}.recipientLabel{font-size:13px;font-weight:800;color:#666;margin-top:2px}.recipientName{font-size:29px;font-weight:1000;margin:4px 0 18px}.voucherTitle{font-size:19px;font-weight:1000;margin-bottom:8px}
 .amountBox{background:var(--y);border:3px solid #111;border-radius:22px;padding:19px 15px;margin-bottom:20px;box-shadow:5px 5px 0 #111}
 .amountLabel{font-size:13px;font-weight:800}.amount{font-size:55px;font-weight:1000;letter-spacing:-2px}
 .btn{width:100%;border:3px solid #111;border-radius:17px;padding:16px 18px;font-size:18px;font-weight:1000;background:#111;color:#fff;box-shadow:5px 5px 0 rgba(0,0,0,.2);cursor:pointer}
@@ -44,11 +44,13 @@ h1{font-size:35px;line-height:1.08;margin:0 0 11px;letter-spacing:-1.2px}.lead{f
   <div class="wrap">
     <div class="logo"><div class="logoMark">T</div><div><div class="logoMain">TENME</div><div class="logoSub">תן לי. כי מגיע לי.</div></div></div>
     <section class="card">
-      <div class="eyebrow">🎁 זיכוי ממתין לאישור</div>
-      <h1>יש לך 200 ₪ בדרך</h1>
-      <p class="lead">נשאר רק לאשר את הזיכוי והוא יופיע אצלך מיד.</p>
-      <div class="amountBox"><div class="amountLabel">סכום הזיכוי</div><div class="amount">200 ₪</div></div>
-      <button id="approve" class="btn">לאישור הזיכוי</button>
+      <div class="eyebrow">TENME • מתנה אישית</div>
+      <div class="recipientLabel">לכבוד</div>
+      <h1 class="recipientName">אלון מיכאלי</h1>
+      <div class="voucherTitle">תלוש מתנה</div>
+      <p class="lead">תלוש מתנה אישי בסך 200 ₪ ממתין לאישור ולקבלה.</p>
+      <div class="amountBox"><div class="amountLabel">שווי התלוש</div><div class="amount">200 ₪</div></div>
+      <button id="approve" class="btn">אישור וקבלת התלוש</button>
       <div class="tiny">TENME הוא אתר פארודי ואינו קשור ל‑BUYME.</div>
     </section>
   </div>
@@ -58,9 +60,9 @@ h1{font-size:35px;line-height:1.08;margin:0 0 11px;letter-spacing:-1.2px}.lead{f
   <div class="dots"></div><div id="confetti" class="confetti"></div>
   <div class="ticket">
     <div class="success">✓</div>
-    <h2>הזיכוי אושר!</h2>
-    <p>הנה הזיכוי שלך, בדיוק כמו שהבטחנו 😎</p>
-    <div class="gift"><div class="caption">זיכוי דיגיטלי</div><div class="sum">200 ₪</div><div class="tagline">TENME — תן לי</div></div>
+    <h2>התלוש אושר!</h2>
+    <p>אלון מיכאלי, תלוש המתנה שלך מוכן 🎁</p>
+    <div class="gift"><div class="caption">תלוש מתנה אישי</div><div class="sum">200 ₪</div><div class="tagline">לכבוד אלון מיכאלי • TENME</div></div>
     <div class="joke">קטן עליך. עכשיו רק נשאר למצוא מי באמת משלם 😉</div>
     <button id="back" class="back">חזור</button>
   </div>
