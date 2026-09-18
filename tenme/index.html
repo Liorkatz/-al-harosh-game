@@ -24,7 +24,7 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
 .btn{width:100%;border:3px solid #111;border-radius:17px;padding:16px 18px;font-size:18px;font-weight:1000;background:#111;color:#fff;box-shadow:5px 5px 0 rgba(0,0,0,.2);cursor:pointer}
 .btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.2)}
 .tiny{font-size:11px;color:#777;margin-top:13px}
-.result{display:none}.result.show{display:grid}.ticket{width:min(100%,430px);position:relative;z-index:2;animation:pop .5s cubic-bezier(.2,.9,.2,1.18)}
+.result{display:none}.result.show{display:grid;cursor:pointer}.ticket{width:min(100%,430px);position:relative;z-index:2;animation:pop .5s cubic-bezier(.2,.9,.2,1.18)}
 @keyframes pop{from{transform:scale(.75) rotate(-3deg);opacity:0}to{transform:none;opacity:1}}
 .success{width:72px;height:72px;margin:-4px auto 13px;border:3px solid #111;border-radius:50%;background:var(--y);display:grid;place-items:center;font-size:35px;font-weight:1000}
 .ticket h2{font-size:30px;margin:0 0 7px}.ticket p{margin:0;color:#555}
@@ -51,7 +51,6 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
       <p class="lead">תלוש מתנה אישי בסך 200 ₪ ממתין לאישור ולקבלה.</p>
       <div class="amountBox"><div class="amountLabel">שווי התלוש</div><div class="amount">200 ₪</div></div>
       <button id="approve" class="btn">אישור וקבלת התלוש</button>
-      <div class="tiny">TENME הוא אתר פארודי ואינו קשור ל‑BUYME.</div>
     </section>
   </div>
 </main>
@@ -64,7 +63,6 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
     <p>אלון מיכאלי, תלוש המתנה שלך מוכן 🎁</p>
     <div class="gift"><div class="caption">תלוש מתנה אישי</div><div class="sum">200 ₪</div><div class="tagline">לכבוד אלון מיכאלי • TENME</div></div>
     <div class="joke">קטן עליך. עכשיו רק נשאר למצוא מי באמת משלם 😉</div>
-    <button id="back" class="back">חזור</button>
   </div>
 </section>
 
@@ -79,11 +77,11 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
 
 <script>
 const home=document.getElementById('home'),result=document.getElementById('result'),prank=document.getElementById('prank');
-const approve=document.getElementById('approve'),back=document.getElementById('back'),restart=document.getElementById('restart'),confetti=document.getElementById('confetti');
+const approve=document.getElementById('approve'),restart=document.getElementById('restart'),confetti=document.getElementById('confetti');
 const colors=['#111','#fff','#ffb719','#ffc83d'];
 function makeConfetti(){confetti.innerHTML='';for(let i=0;i<48;i++){const e=document.createElement('i');e.className='c';e.style.left=Math.random()*100+'%';e.style.top=(-15-Math.random()*90)+'vh';e.style.background=colors[Math.floor(Math.random()*colors.length)];e.style.animationDelay=Math.random()*1.8+'s';e.style.animationDuration=2.1+Math.random()*2+'s';confetti.appendChild(e)}}
 approve.onclick=()=>{makeConfetti();home.style.display='none';result.classList.add('show');if(navigator.vibrate)navigator.vibrate([40,45,70])};
-back.onclick=()=>{result.classList.remove('show');prank.classList.add('show');if(navigator.vibrate)navigator.vibrate([80,50,80])};
+result.onclick=()=>{result.classList.remove('show');prank.classList.add('show');if(navigator.vibrate)navigator.vibrate([80,50,80])};
 restart.onclick=()=>{prank.classList.remove('show');home.style.display='grid'};
 </script>
 </body>
