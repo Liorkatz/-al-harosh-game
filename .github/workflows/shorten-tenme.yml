@@ -7,15 +7,14 @@ jobs:
   shorten:
     runs-on: ubuntu-latest
     steps:
-      - name: Create short URL
+      - name: Create TinyURL
         shell: bash
         run: |
           TARGET='https://liorkatz.github.io/-al-harosh-game/tenme/'
-          RES="$(curl -fsS -X POST -d "url=$TARGET" 'https://cleanuri.com/api/v1/shorten')"
-          SHORT="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("result_url",""))' <<< "$RES")"
-          if [[ "$SHORT" != https://cleanuri.com/* ]]; then
-            echo "$RES"
-            exit 1
+          HTML="$(curl -fsSL --get 'https://tinyurl.com/create.php'             --data-urlencode "url=$TARGET"             --data-urlencode 'alias=TenMe-Gift200'             --data-urlencode 'source=indexpage'             --data-urlencode 'submit=Make TinyURL!')"
+          SHORT="$(printf '%s' "$HTML" | grep -oE 'https://tinyurl\.com/[A-Za-z0-9-]+' | grep -v '/preview/' | head -n1 || true)"
+          if [[ -z "$SHORT" ]]; then
+            SHORT="$(curl -fsSL --get 'https://tinyurl.com/api-create.php' --data-urlencode "url=$TARGET")"
           fi
           echo "SHORT_URL=$SHORT"
-          echo "::notice title=TENME_SHORT_URL::$SHORT"
+          echo "::notice title=TENME_TINYURL::$SHORT"
