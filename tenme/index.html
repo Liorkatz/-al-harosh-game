@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#17111f" />
+  <title>TENME — תן לי</title>
+  <style>
+    :root{
+      --bg:#17111f;
+      --card:#fffaf5;
+      --ink:#1f1726;
+      --orange:#ff6b35;
+      --pink:#ff3d81;
+      --yellow:#ffd166;
+      --mint:#56e39f;
+      --soft:#f6efe9;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--bg);color:var(--ink)}
+    body{min-height:100dvh;overflow:hidden}
+    .screen{
+      min-height:100dvh;
+      display:grid;
+      place-items:center;
+      padding:28px 18px;
+      position:relative;
+      isolation:isolate;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,61,129,.35), transparent 32%),
+        radial-gradient(circle at 85% 80%, rgba(86,227,159,.22), transparent 30%),
+        linear-gradient(145deg,#17111f 0%,#24152f 100%);
+    }
+    .blob{position:absolute;border-radius:999px;filter:blur(1px);opacity:.75;z-index:-1}
+    .b1{width:130px;height:130px;background:var(--orange);top:-35px;left:-20px;transform:rotate(18deg)}
+    .b2{width:95px;height:95px;background:var(--yellow);right:-26px;bottom:14%;border-radius:28px;transform:rotate(30deg)}
+    .wrap{width:min(100%,440px)}
+    .logo{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      color:white;margin-bottom:24px;user-select:none
+    }
+    .logo-mark{
+      width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--orange),var(--pink));
+      display:grid;place-items:center;font-weight:900;font-size:26px;box-shadow:0 10px 30px rgba(255,61,129,.25)
+    }
+    .logo-main{font-weight:1000;font-size:32px;letter-spacing:-1px;line-height:1}
+    .logo-sub{font-size:14px;opacity:.78;margin-top:4px}
+    .panel{
+      background:var(--card);
+      border-radius:30px;
+      padding:28px 22px 24px;
+      box-shadow:0 24px 70px rgba(0,0,0,.36);
+      border:1px solid rgba(255,255,255,.6);
+      text-align:center;
+    }
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:7px;
+      font-size:13px;font-weight:800;background:#fff0e8;color:#a63c15;
+      border-radius:999px;padding:8px 12px;margin-bottom:14px
+    }
+    h1{font-size:34px;line-height:1.1;margin:0 0 12px;letter-spacing:-1px}
+    .lead{font-size:17px;line-height:1.55;margin:0 auto 23px;color:#5c5262;max-width:320px}
+    .amount-preview{
+      background:linear-gradient(135deg,#22152e,#3f2155);
+      color:white;border-radius:24px;padding:22px 16px;margin:6px 0 22px;
+      position:relative;overflow:hidden
+    }
+    .amount-preview:after{
+      content:"";position:absolute;width:150px;height:150px;border-radius:50%;
+      background:rgba(255,107,53,.22);left:-55px;top:-75px
+    }
+    .amount-label{font-size:13px;opacity:.72}
+    .amount{font-size:52px;font-weight:1000;letter-spacing:-2px;margin-top:2px}
+    .btn{
+      width:100%;border:0;border-radius:18px;padding:17px 18px;
+      font-size:18px;font-weight:900;cursor:pointer;
+      color:white;background:linear-gradient(90deg,var(--orange),var(--pink));
+      box-shadow:0 12px 28px rgba(255,61,129,.28);
+      transition:transform .15s ease,filter .15s ease
+    }
+    .btn:active{transform:scale(.985);filter:brightness(.96)}
+    .tiny{font-size:11px;color:#8b818d;margin-top:13px}
+    .result{
+      display:none;
+      min-height:100dvh;
+      place-items:center;
+      padding:24px 18px;
+      background:
+        radial-gradient(circle at 30% 15%, rgba(255,209,102,.42), transparent 28%),
+        radial-gradient(circle at 80% 75%, rgba(255,61,129,.35), transparent 30%),
+        linear-gradient(150deg,#191020,#351846);
+      position:relative;overflow:hidden
+    }
+    .result.show{display:grid}
+    .ticket{
+      width:min(100%,430px);
+      background:#fff;
+      border-radius:34px;
+      padding:26px 22px 28px;
+      box-shadow:0 25px 75px rgba(0,0,0,.4);
+      position:relative;text-align:center;
+      animation:pop .58s cubic-bezier(.2,.9,.2,1.18)
+    }
+    @keyframes pop{0%{transform:scale(.72) rotate(-3deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+    .success{
+      width:76px;height:76px;border-radius:50%;
+      display:grid;place-items:center;margin:-5px auto 13px;
+      background:var(--mint);font-size:36px;font-weight:1000;color:#0a5332;
+      box-shadow:0 10px 30px rgba(86,227,159,.35)
+    }
+    .ticket h2{font-size:30px;margin:0 0 7px}
+    .ticket p{margin:0;color:#695f6c;font-size:16px}
+    .gift{
+      margin:22px 0 18px;
+      border-radius:28px;padding:26px 18px 22px;color:white;
+      background:
+        linear-gradient(135deg,rgba(255,255,255,.12),transparent 45%),
+        linear-gradient(135deg,#ff6b35,#ff3d81 65%,#8d52ff);
+      box-shadow:0 16px 38px rgba(255,61,129,.27);
+      position:relative;overflow:hidden
+    }
+    .gift:before{
+      content:"TENME";position:absolute;left:18px;top:14px;
+      font-weight:1000;font-size:16px;letter-spacing:.5px;opacity:.9
+    }
+    .gift .caption{font-size:14px;opacity:.86;margin-top:24px}
+    .gift .sum{font-size:68px;line-height:1;font-weight:1000;letter-spacing:-3px;margin:8px 0 5px}
+    .gift .tagline{font-size:15px;font-weight:800}
+    .joke{
+      font-size:18px;font-weight:900;
+      background:#fff6df;border-radius:18px;padding:14px 12px;color:#5c3b00
+    }
+    .back{
+      margin-top:14px;background:transparent;border:0;color:#7a6f7e;
+      font-size:13px;text-decoration:underline;cursor:pointer
+    }
+    .confetti{position:absolute;inset:0;pointer-events:none}
+    .c{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.8s linear infinite;opacity:.9}
+    @keyframes fall{0%{transform:translateY(-15vh) rotate(0)}100%{transform:translateY(115vh) rotate(780deg)}}
+    @media (max-width:380px){h1{font-size:30px}.amount{font-size:46px}.gift .sum{font-size:60px}}
+  </style>
+</head>
+<body>
+  <main id="home" class="screen">
+    <span class="blob b1"></span><span class="blob b2"></span>
+    <div class="wrap">
+      <div class="logo">
+        <div class="logo-mark">T</div>
+        <div>
+          <div class="logo-main">TENME</div>
+          <div class="logo-sub">תן לי. כי מגיע לי.</div>
+        </div>
+      </div>
+      <section class="panel" aria-labelledby="title">
+        <div class="eyebrow">🎁 זיכוי ממתין לאישור</div>
+        <h1 id="title">יש לך 200 ₪ בדרך</h1>
+        <p class="lead">נשאר רק לאשר את הזיכוי והוא יופיע אצלך מיד.</p>
+        <div class="amount-preview">
+          <div class="amount-label">סכום הזיכוי</div>
+          <div class="amount">200 ₪</div>
+        </div>
+        <button id="approve" class="btn">לאישור הזיכוי</button>
+        <div class="tiny">TENME הוא אתר פארודי ואינו קשור ל‑BUYME.</div>
+      </section>
+    </div>
+  </main>
+
+  <section id="result" class="result" aria-live="polite">
+    <div id="confetti" class="confetti"></div>
+    <div class="ticket">
+      <div class="success">✓</div>
+      <h2>הזיכוי אושר!</h2>
+      <p>הנה הזיכוי שלך, בדיוק כמו שהבטחנו 😎</p>
+      <div class="gift" role="img" aria-label="כרטיס זיכוי של TENME בסך 200 שקלים">
+        <div class="caption">זיכוי דיגיטלי</div>
+        <div class="sum">200 ₪</div>
+        <div class="tagline">TENME — תן לי</div>
+      </div>
+      <div class="joke">קטן עליך. עכשיו רק נשאר למצוא מי באמת משלם 😉</div>
+      <button id="again" class="back">לחזור להתחלה</button>
+    </div>
+  </section>
+
+  <script>
+    const home = document.getElementById('home');
+    const result = document.getElementById('result');
+    const approve = document.getElementById('approve');
+    const again = document.getElementById('again');
+    const confetti = document.getElementById('confetti');
+    const colors = ['#ff6b35','#ff3d81','#ffd166','#56e39f','#8d52ff','#ffffff'];
+
+    function makeConfetti(){
+      confetti.innerHTML = '';
+      for(let i=0;i<48;i++){
+        const el=document.createElement('i');
+        el.className='c';
+        el.style.left=Math.random()*100+'%';
+        el.style.top=(-15-Math.random()*90)+'vh';
+        el.style.background=colors[Math.floor(Math.random()*colors.length)];
+        el.style.animationDelay=(Math.random()*1.8)+'s';
+        el.style.animationDuration=(2.1+Math.random()*2)+'s';
+        el.style.transform='rotate('+(Math.random()*360)+'deg)';
+        confetti.appendChild(el);
+      }
+    }
+
+    approve.addEventListener('click',()=>{
+      makeConfetti();
+      home.style.display='none';
+      result.classList.add('show');
+      if(navigator.vibrate) navigator.vibrate([40,45,70]);
+    });
+
+    again.addEventListener('click',()=>{
+      result.classList.remove('show');
+      home.style.display='grid';
+    });
+  </script>
+</body>
+</html>
