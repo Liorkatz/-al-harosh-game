@@ -30,6 +30,17 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
 .ticket h2{font-size:30px;margin:0 0 7px}.ticket p{margin:0;color:#555}
 .gift{margin:21px 0 17px;background:var(--y);border:3px solid #111;border-radius:23px;padding:25px 15px 21px;box-shadow:6px 6px 0 #111;position:relative}
 .gift:before{content:"TenMe";position:absolute;left:15px;top:12px;font-weight:1000}.gift .caption{font-size:13px;font-weight:800;margin-top:20px}.gift .sum{font-size:66px;font-weight:1000;line-height:1;margin:8px 0 4px}.gift .tagline{font-size:15px;font-weight:900}
+.qrWrap{margin:18px auto 16px;text-align:center}
+.qrLabel{font-size:12px;font-weight:900;margin-bottom:8px;color:#555}
+.fakeQR{width:170px;height:170px;margin:auto;background:
+linear-gradient(90deg,#111 10px,transparent 10px) 18px 18px/22px 22px,
+linear-gradient(#111 10px,transparent 10px) 7px 7px/22px 22px,
+repeating-linear-gradient(45deg,#111 0 7px,#fff 7px 14px);
+border:10px solid #fff;outline:3px solid #111;border-radius:16px;position:relative;box-shadow:5px 5px 0 #111;overflow:hidden}
+.fakeQR:before,.fakeQR:after,.qrFinder{content:"";position:absolute;width:42px;height:42px;background:#111;border:7px solid #fff;outline:6px solid #111;z-index:2}
+.fakeQR:before{top:10px;left:10px}.fakeQR:after{top:10px;right:10px}.qrFinder{bottom:10px;left:10px}
+.qrLogo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:58px;border-radius:15px;background:#111;border:4px solid var(--y);display:flex;align-items:center;justify-content:center;direction:ltr;z-index:3;font-weight:1000;box-shadow:0 0 0 5px #fff}
+.qrLogo .qt{color:var(--y);font-size:29px;line-height:1}.qrLogo .qrest{color:#fff;font-size:20px}.qrLogo .qm{color:var(--y)}
 .joke{background:#111;color:#fff;border-radius:16px;padding:13px;font-size:17px;font-weight:900}
 .back{margin-top:15px;border:0;background:transparent;font-size:14px;font-weight:900;text-decoration:underline;cursor:pointer}
 .confetti{position:absolute;inset:0;pointer-events:none}.c{position:absolute;width:9px;height:17px;border-radius:2px;animation:fall 2.8s linear infinite}@keyframes fall{from{transform:translateY(-15vh) rotate(0)}to{transform:translateY(115vh) rotate(780deg)}}
@@ -62,6 +73,13 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
     <h2>התלוש אושר!</h2>
     <p>אלון מיכאלי, תלוש המתנה שלך מוכן 🎁</p>
     <div class="gift"><div class="caption">תלוש מתנה אישי</div><div class="sum">200 ₪</div><div class="tagline">לכבוד אלון מיכאלי • <bdi dir="ltr">TenMe</bdi></div></div>
+    <div class="qrWrap">
+      <div class="qrLabel">קוד למימוש התלוש</div>
+      <div class="fakeQR" aria-label="QR פיקטיבי של TenMe">
+        <span class="qrFinder"></span>
+        <div class="qrLogo"><span class="qt">T</span><span class="qrest">en<span class="qm">M</span>e</span></div>
+      </div>
+    </div>
     <div class="joke">קטן עליך. עכשיו רק נשאר למצוא מי באמת משלם 😉</div>
   </div>
 </section>
