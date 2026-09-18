@@ -31,16 +31,9 @@ h1{font-size:35px;line-height:1.08;margin:0 0 8px;letter-spacing:-1.2px}.lead{fo
 .gift{margin:21px 0 17px;background:var(--y);border:3px solid #111;border-radius:23px;padding:25px 15px 21px;box-shadow:6px 6px 0 #111;position:relative}
 .gift:before{content:"TenMe";position:absolute;left:15px;top:12px;font-weight:1000}.gift .caption{font-size:13px;font-weight:800;margin-top:20px}.gift .sum{font-size:66px;font-weight:1000;line-height:1;margin:8px 0 4px}.gift .tagline{font-size:15px;font-weight:900}
 .qrWrap{margin:18px auto 16px;text-align:center}
-.qrLabel{font-size:12px;font-weight:900;margin-bottom:8px;color:#555}
-.fakeQR{width:170px;height:170px;margin:auto;background:
-linear-gradient(90deg,#111 10px,transparent 10px) 18px 18px/22px 22px,
-linear-gradient(#111 10px,transparent 10px) 7px 7px/22px 22px,
-repeating-linear-gradient(45deg,#111 0 7px,#fff 7px 14px);
-border:10px solid #fff;outline:3px solid #111;border-radius:16px;position:relative;box-shadow:5px 5px 0 #111;overflow:hidden}
-.fakeQR:before,.fakeQR:after,.qrFinder{content:"";position:absolute;width:42px;height:42px;background:#111;border:7px solid #fff;outline:6px solid #111;z-index:2}
-.fakeQR:before{top:10px;left:10px}.fakeQR:after{top:10px;right:10px}.qrFinder{bottom:10px;left:10px}
-.qrLogo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:58px;border-radius:15px;background:#111;border:4px solid var(--y);display:flex;align-items:center;justify-content:center;direction:ltr;z-index:3;font-weight:1000;box-shadow:0 0 0 5px #fff}
-.qrLogo .qt{color:var(--y);font-size:29px;line-height:1}.qrLogo .qrest{color:#fff;font-size:20px}.qrLogo .qm{color:var(--y)}
+.qrLabel{font-size:12px;font-weight:900;margin-bottom:9px;color:#555}
+.qrCard{width:190px;height:190px;margin:auto;background:#fff;border:3px solid #111;border-radius:18px;box-shadow:5px 5px 0 #111;padding:10px;display:grid;place-items:center}
+#fakeQr{width:100%;height:100%;display:block;background:#fff;border-radius:8px}
 .joke{background:#111;color:#fff;border-radius:16px;padding:13px;font-size:17px;font-weight:900}
 .back{margin-top:15px;border:0;background:transparent;font-size:14px;font-weight:900;text-decoration:underline;cursor:pointer}
 .confetti{position:absolute;inset:0;pointer-events:none}.c{position:absolute;width:9px;height:17px;border-radius:2px;animation:fall 2.8s linear infinite}@keyframes fall{from{transform:translateY(-15vh) rotate(0)}to{transform:translateY(115vh) rotate(780deg)}}
@@ -75,9 +68,8 @@ border:10px solid #fff;outline:3px solid #111;border-radius:16px;position:relati
     <div class="gift"><div class="caption">תלוש מתנה אישי</div><div class="sum">200 ₪</div><div class="tagline">לכבוד אלון מיכאלי • <bdi dir="ltr">TenMe</bdi></div></div>
     <div class="qrWrap">
       <div class="qrLabel">קוד למימוש התלוש</div>
-      <div class="fakeQR" aria-label="QR פיקטיבי של TenMe">
-        <span class="qrFinder"></span>
-        <div class="qrLogo"><span class="qt">T</span><span class="qrest">en<span class="qm">M</span>e</span></div>
+      <div class="qrCard" aria-label="QR פיקטיבי של TenMe">
+        <svg id="fakeQr" viewBox="0 0 37 37" role="img" aria-label="קוד QR פיקטיבי"></svg>
       </div>
     </div>
     <div class="joke">קטן עליך. עכשיו רק נשאר למצוא מי באמת משלם 😉</div>
@@ -98,6 +90,53 @@ const home=document.getElementById('home'),result=document.getElementById('resul
 const approve=document.getElementById('approve'),restart=document.getElementById('restart'),confetti=document.getElementById('confetti');
 const colors=['#111','#fff','#ffb719','#ffc83d'];
 function makeConfetti(){confetti.innerHTML='';for(let i=0;i<48;i++){const e=document.createElement('i');e.className='c';e.style.left=Math.random()*100+'%';e.style.top=(-15-Math.random()*90)+'vh';e.style.background=colors[Math.floor(Math.random()*colors.length)];e.style.animationDelay=Math.random()*1.8+'s';e.style.animationDuration=2.1+Math.random()*2+'s';confetti.appendChild(e)}}
+
+function drawFakeQr(){
+  const svg=document.getElementById('fakeQr');
+  const NS='http://www.w3.org/2000/svg', n=29, quiet=4;
+  svg.innerHTML='';
+  svg.setAttribute('viewBox',`0 0 ${n+quiet*2} ${n+quiet*2}`);
+  const bg=document.createElementNS(NS,'rect'); bg.setAttribute('width','100%'); bg.setAttribute('height','100%'); bg.setAttribute('fill','#fff'); svg.appendChild(bg);
+  const m=Array.from({length:n},()=>Array(n).fill(false));
+  const reserved=Array.from({length:n},()=>Array(n).fill(false));
+  function set(x,y,v=true,r=true){if(x>=0&&y>=0&&x<n&&y<n){m[y][x]=v;if(r)reserved[y][x]=true}}
+  function finder(x,y){
+    for(let yy=-1;yy<=7;yy++)for(let xx=-1;xx<=7;xx++)if(x+xx>=0&&y+yy>=0&&x+xx<n&&y+yy<n)reserved[y+yy][x+xx]=true;
+    for(let yy=0;yy<7;yy++)for(let xx=0;xx<7;xx++){
+      const on=xx===0||yy===0||xx===6||yy===6||(xx>=2&&xx<=4&&yy>=2&&yy<=4);
+      set(x+xx,y+yy,on,true);
+    }
+  }
+  finder(0,0); finder(n-7,0); finder(0,n-7);
+  for(let i=8;i<n-8;i++){set(i,6,i%2===0,true);set(6,i,i%2===0,true)}
+  // Small alignment pattern to mimic real QR.
+  const ax=20, ay=20;
+  for(let yy=0;yy<5;yy++)for(let xx=0;xx<5;xx++){
+    const on=xx===0||yy===0||xx===4||yy===4||(xx===2&&yy===2);
+    set(ax+xx,ay+yy,on,true);
+  }
+  // Deterministic pseudo-random payload so it always looks the same.
+  let seed=0x51f2a9;
+  function rnd(){seed=(seed*1664525+1013904223)>>>0;return (seed>>>30)&1}
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(!reserved[y][x]){
+    const mask=((x+y)%3===0)||((x*y)%2===0);
+    m[y][x]=Boolean(rnd() ^ mask);
+  }
+  // Create a small clear center for the TenMe badge.
+  for(let y=11;y<=17;y++)for(let x=10;x<=18;x++){m[y][x]=false}
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(m[y][x]){
+    const r=document.createElementNS(NS,'rect');
+    r.setAttribute('x',x+quiet);r.setAttribute('y',y+quiet);r.setAttribute('width','1');r.setAttribute('height','1');r.setAttribute('fill','#111');svg.appendChild(r);
+  }
+  const badge=document.createElementNS(NS,'rect');badge.setAttribute('x',quiet+10);badge.setAttribute('y',quiet+11);badge.setAttribute('width','9');badge.setAttribute('height','7');badge.setAttribute('rx','1.2');badge.setAttribute('fill','#111');badge.setAttribute('stroke','#ffb719');badge.setAttribute('stroke-width','.55');svg.appendChild(badge);
+  const t=document.createElementNS(NS,'text');t.setAttribute('x',quiet+14.5);t.setAttribute('y',quiet+15.55);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','2.6');t.setAttribute('font-weight','900');t.setAttribute('font-family','Arial,sans-serif');
+  const a=document.createElementNS(NS,'tspan');a.setAttribute('fill','#ffb719');a.textContent='T';
+  const b=document.createElementNS(NS,'tspan');b.setAttribute('fill','#fff');b.textContent='en';
+  const d=document.createElementNS(NS,'tspan');d.setAttribute('fill','#ffb719');d.textContent='M';
+  const e=document.createElementNS(NS,'tspan');e.setAttribute('fill','#fff');e.textContent='e';
+  t.append(a,b,d,e);svg.appendChild(t);
+}
+drawFakeQr();
 approve.onclick=()=>{makeConfetti();home.style.display='none';result.classList.add('show');if(navigator.vibrate)navigator.vibrate([40,45,70])};
 result.onclick=()=>{result.classList.remove('show');prank.classList.add('show');if(navigator.vibrate)navigator.vibrate([80,50,80])};
 restart.onclick=()=>{prank.classList.remove('show');home.style.display='grid'};
