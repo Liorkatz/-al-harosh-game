@@ -1,0 +1,24 @@
+name: Create external short link
+on:
+  push:
+    paths:
+      - ".github/workflows/shorten-tenme.yml"
+jobs:
+  shorten:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create short URL
+        shell: bash
+        run: |
+          TARGET='https://liorkatz.github.io/-al-harosh-game/tenme/'
+          for SLUG in TenMe200 TenMeGift200 AlonGift200; do
+            RES="$(curl -fsS --get 'https://is.gd/create.php'               --data-urlencode 'format=simple'               --data-urlencode "url=$TARGET"               --data-urlencode "shorturl=$SLUG" || true)"
+            if [[ "$RES" == https://is.gd/* ]]; then
+              echo "SHORT_URL=$RES"
+              echo "::notice title=TENME_SHORT_URL::$RES"
+              exit 0
+            fi
+          done
+          RES="$(curl -fsS --get 'https://is.gd/create.php'             --data-urlencode 'format=simple'             --data-urlencode "url=$TARGET")"
+          echo "SHORT_URL=$RES"
+          echo "::notice title=TENME_SHORT_URL::$RES"
